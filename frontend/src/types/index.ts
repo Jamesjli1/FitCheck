@@ -35,4 +35,5 @@ export type FitRun = {
   createdAt: number;
   imageFile: File;
   imagePreviewUrl: string;
+  selected: boolean;
 };

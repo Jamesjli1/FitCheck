@@ -24,7 +24,9 @@ export default function FitCheckPage() {
 
   // Session-level combined outputs
   const [identity, setIdentity] = useState<IdentityResult | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
+  const [recommendations, setRecommendations] = useState<
+    Recommendation[] | null
+  >(null);
 
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
   const [loadingRecommend, setLoadingRecommend] = useState(false);
@@ -36,8 +38,10 @@ export default function FitCheckPage() {
   );
 
   function validateFile(file: File): string | null {
-    if (!ALLOWED_TYPES.has(file.type)) return "Please upload a JPG, PNG, or WebP image.";
-    if (file.size > MAX_FILE_BYTES) return `File too large. Max size is ${MAX_FILE_MB}MB.`;
+    if (!ALLOWED_TYPES.has(file.type))
+      return "Please upload a JPG, PNG, or WebP image.";
+    if (file.size > MAX_FILE_BYTES)
+      return `File too large. Max size is ${MAX_FILE_MB}MB.`;
     return null;
   }
 
@@ -47,7 +51,9 @@ export default function FitCheckPage() {
 
     const remaining = MAX_IMAGES_PER_SESSION - runs.length;
     if (remaining <= 0) {
-      setError(`Session limit reached (${MAX_IMAGES_PER_SESSION}). Remove one or refresh.`);
+      setError(
+        `Session limit reached (${MAX_IMAGES_PER_SESSION}). Remove one or refresh.`
+      );
       return;
     }
 
@@ -72,6 +78,7 @@ export default function FitCheckPage() {
         createdAt: Date.now(),
         imageFile: file,
         imagePreviewUrl: preview,
+        selected: true,
       });
     }
 
@@ -86,12 +93,18 @@ export default function FitCheckPage() {
 
   // Combined analyze: sends ALL images to backend and gets ONE IdentityResult
   async function handleAnalyzeAll() {
+    // Check user has uploaded a file(s)
     if (runs.length === 0) return setError("Upload at least one image first.");
+    // Check user has selected a file(s)
+    if (runs.filter((run) => {return run.selected === true}).length === 0) return setError("Select at least one image first.")
     setError(null);
     setLoadingAnalyze(true);
 
     try {
-      const result = await analyzeBatch(runs.map((r) => r.imageFile));
+      // Todo: remove later
+      // const result = await analyzeBatch(runs.map((r) => r.imageFile));
+      const result = await analyzeBatch((runs.filter((run) => {return run.selected})).map(run => run.imageFile));
+
       setIdentity(result);
       setRecommendations(null); // reset recs after new identity
     } catch {
@@ -134,6 +147,14 @@ export default function FitCheckPage() {
     });
   }
 
+  const toggleSelect = (id: string) => {
+    setRuns((prevRuns) =>
+    prevRuns.map((run) =>
+      run.id === id ? { ...run, selected: !run.selected } : run
+    )
+  );
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <Header maxImages={MAX_IMAGES_PER_SESSION} maxFileMb={MAX_FILE_MB} />
@@ -167,7 +188,9 @@ export default function FitCheckPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <StyleDNASection identity={identity} />
-        <RecommendationsSection recommendations={recommendations ?? undefined} />
+        <RecommendationsSection
+          recommendations={recommendations ?? undefined}
+        />
       </div>
 
       <SessionHistory
@@ -176,8 +199,8 @@ export default function FitCheckPage() {
         maxImages={MAX_IMAGES_PER_SESSION}
         onSelect={setActiveId}
         onRemove={handleRemoveRun}
+        onToggle={toggleSelect}
       />
-
     </div>
   );
 }
