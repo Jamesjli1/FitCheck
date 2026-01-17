@@ -9,16 +9,18 @@ from pydantic import BaseModel
 import base64
 from google.genai import types
 from typing import Any, List
+import requests
 
 from google import genai
 
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing GEMINI_API_KEY in backend/.env")
 
-MODEL_NAME = os.getenv("GEMINI_MODEL", "models/gemini-2.5-flash")
+MODEL_NAME = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-lite")
 
 client = genai.Client(api_key=API_KEY)
 
@@ -61,6 +63,21 @@ def extract_json(text: str, brace_1: str = '{', brace_2: str = '}') -> dict:
     json_str = text[start_idx:end_idx + 1]
     
     return json.loads(json_str)
+
+def openrouter_post(messages: list[dict[str, Any]]) -> dict[str, Any]:
+    return requests.post(
+        url="https://openrouter.ai/api/v1/chat/completions",
+        headers={
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "HTTP-Referer": "https://www.google.com",
+        "X-Title": "Google"
+        },
+        data=json.dumps({
+            "model": MODEL_NAME,
+            "messages": messages
+        })
+    ).json()
+
 
 app = FastAPI()
 
@@ -105,20 +122,19 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
                 "Identify the style of dress of the person in the image. Return a JSON object with the style name and a description. "
             )
         
-        # Process all images
-        contents = [prompt]
+        content = [{"type": "text", "text": prompt}]
+        # iteratively add all images to the content
         for image in images:
             image_bytes = await image.read()
-            image_part = types.Part.from_bytes(data=image_bytes, mime_type=image.content_type)
-            contents.append(image_part)
+            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+            data_url = f"data:image/{image.content_type};base64,{image_base64}"
+            content.append({"type": "image_url", "image_url": {"url": data_url}})
         
-        resp = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=contents,
-        )
-        answer = (resp.text or "").strip()
+        messages = [{"role": "user", "content": content}]
+        resp = openrouter_post(messages)
+        answer = (resp["choices"][0]["message"]["content"] or "").strip()
         if not answer:
-            raise HTTPException(status_code=502, detail="Gemini returned empty text")
+            raise HTTPException(status_code=502, detail="Model returned empty text")
         
         json_answer = extract_json(answer)
         
@@ -146,15 +162,11 @@ async def search_terms(req: SearchRequest):
             "search-terms",
             ""
         ).replace("<styledesc>", json.dumps(style_profile)).replace("<weather>", json.dumps(weather)).replace("<looking_for>", looking_for)
-        contents = [prompt]
 
-        resp = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=contents,
-        )
+        resp = openrouter_post([{"role": "user", "content": prompt}])
         answer = (resp.text or "").strip()
         if not answer:
-            raise HTTPException(status_code=502, detail="Gemini returned empty text")
+            raise HTTPException(status_code=502, detail="Model returned empty text")
         
         json_answer = extract_json(answer, '[', ']')
         
