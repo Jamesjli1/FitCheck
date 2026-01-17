@@ -15,12 +15,14 @@ export default function SessionHistory({
   maxImages,
   onSelect,
   onRemove,
+  onToggle
 }: {
   runs: FitRun[];
   activeId: string | null;
   maxImages: number;
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
+  onToggle: (id: string) => void;
 }) {
   return (
     <section
@@ -33,9 +35,14 @@ export default function SessionHistory({
         background: "rgba(255,255,255,0.04)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded 
-        </h2>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded</h2>
         <div style={{ opacity: 0.75, fontSize: 13 }}>
           {runs.length} / {maxImages}
         </div>
@@ -66,7 +73,9 @@ export default function SessionHistory({
                   border: isActive
                     ? "1px solid rgba(97,218,251,0.65)"
                     : "1px solid rgba(255,255,255,0.12)",
-                  background: isActive ? "rgba(97,218,251,0.08)" : "rgba(0,0,0,0.10)",
+                  background: isActive
+                    ? "rgba(97,218,251,0.08)"
+                    : "rgba(0,0,0,0.10)",
                   overflow: "hidden",
                 }}
               >
@@ -81,11 +90,21 @@ export default function SessionHistory({
                   }}
                   title="Select this fit"
                 >
-                  <div style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1 / 1",
+                      overflow: "hidden",
+                    }}
+                  >
                     <img
                       src={r.imagePreviewUrl}
                       alt={r.imageFile.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                     />
                   </div>
 
@@ -96,15 +115,50 @@ export default function SessionHistory({
                     <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>
                       {formatTime(r.createdAt)}
                     </div>
-
-                    <div style={{ marginTop: 8, opacity: 0.8, fontSize: 12 }}>
-                      {isActive ? "• Selected" : "• Captured"}
-                    </div>
                   </div>
                 </button>
 
                 {/* Actions */}
-                <div style={{ display: "flex", gap: 8, padding: 10, paddingTop: 0 }}>
+
+                {/* Toggle Select Image */}
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    padding: 10,
+                    paddingTop: 0,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      onToggle(r.id);
+                    }}
+                    style={{
+                      width: "100%",
+                      opacity: 0.9,
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.06)",
+                      padding: "8px 10px",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
+                    title="Toggle Select"
+                  >
+                    {r.selected ? "Unselect" : "Select"}
+                  </button>
+                </div>
+
+                {/* Removing Image */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    padding: 10,
+                    paddingTop: 0,
+                  }}
+                >
                   <button
                     onClick={() => onRemove(r.id)}
                     style={{
