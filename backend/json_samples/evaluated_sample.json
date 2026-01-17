@@ -1,0 +1,36 @@
+{
+    "profile": {
+        "name": "Elevated Urban Casual, Thoughtfully Layered",
+        "colors": [
+          "Refined neutrals (charcoal, navy, camel, olive, off-white)",
+          "Enriched with deep jewel tones (burgundy, forest green) or sophisticated earthy accents (burnt orange, rust)"
+        ],
+        "hexcolors": [
+          "#36454F",
+          "#000080",
+          "#C19A6B",
+          "#556B2F",
+          "#F5F5DC",
+          "#8B0000",
+          "#228B22",
+          "#CC5500"
+        ],
+        "fit": "Relaxed but tailored; comfortable silhouettes with intentional structure. Well-fitting outerwear, straight-leg or tapered trousers, sweaters with clean lines. Avoid excessive bagginess, focus on modern drape.",
+        "textures": "High-quality natural fibers: merino wool, cashmere blends, structured cotton twill, refined corduroy, brushed flannel. Subtle patterns like houndstooth, fine checks, or textured knits. Elevated technical fabrics for weather-appropriate outerwear.",
+        "layering": "Purposeful and visually dynamic. Base layers of quality tees/henleys, mid-layers of fine-gauge knit sweaters or collared shirts, topped with structured overcoats (wool, peacoat) or smart casual jackets (chore, bomber). Focus on varying fabric weights and lengths for depth.",
+        "accessories": [
+          "Curated and refined leather or technical fabric backpacks",
+          "Premium knit beanies (cashmere, merino)",
+          "Statement scarves in sophisticated patterns or solid rich colors",
+          "Quality timepieces",
+          "Well-maintained leather boots or clean, minimalist sneakers",
+          "Stylish, modern eyewear"
+        ]
+    },
+    "weather": {
+        "temperature": -5,
+        "precipitation": "snow",
+        "wind": "moderate"
+    },
+    "looking_for": "accessories"
+}
