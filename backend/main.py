@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import base64
 from google.genai import types
-from typing import Any
+from typing import Any, List
 
 from google import genai
 
@@ -37,26 +37,26 @@ def load_prompt(prompt_name: str, default: str = "") -> str:
         print(f"Error loading prompt {prompt_name}: {e}")
         return default
 
-def extract_json(text: str) -> dict:
+def extract_json(text: str, brace_1: str = '{', brace_2: str = '}') -> dict:
 
-    start_idx = text.find('{')
+    start_idx = text.find(brace_1)
     if start_idx == -1:
-        raise ValueError("No opening brace found in text")
+        raise ValueError(f"No opening '{brace_1}' brace found in text")
     
     depth = 0
     end_idx = start_idx
     
     for i in range(start_idx, len(text)):
-        if text[i] == '{':
+        if text[i] == brace_1:
             depth += 1
-        elif text[i] == '}':
+        elif text[i] == brace_2:
             depth -= 1
             if depth == 0:
                 end_idx = i
                 break
     
     if depth != 0:
-        raise ValueError("No matching closing brace found")
+        raise ValueError(f"No matching '{brace_2}' brace found")
     
     json_str = text[start_idx:end_idx + 1]
     
@@ -76,11 +76,27 @@ app.add_middleware(
 class StyleResponse(BaseModel):
     answer: dict[str, Any]
 
+class SearchResponse(BaseModel):
+    answer: List[str]
+
+class SearchRequest(BaseModel):
+    profile: dict[str, Any]
+    weather: dict[str, Any]
+    looking_for: str | None = None
+
 @app.post("/eval-style", response_model=StyleResponse)
-async def eval_style(image: UploadFile = File(...), prompt: str = None):
+async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
     try: 
-        if not image.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="Invalid image type")
+        # Validate number of images
+        if len(images) == 0:
+            raise HTTPException(status_code=400, detail="At least one image is required")
+        if len(images) > 10:
+            raise HTTPException(status_code=400, detail="Maximum 10 images allowed")
+        
+        # Validate all images are image types
+        for image in images:
+            if not image.content_type.startswith("image/"):
+                raise HTTPException(status_code=400, detail=f"Invalid image type: {image.filename}")
         
         # Load prompt from file if not provided, with fallback default
         if prompt is None:
@@ -89,9 +105,13 @@ async def eval_style(image: UploadFile = File(...), prompt: str = None):
                 "Identify the style of dress of the person in the image. Return a JSON object with the style name and a description. "
             )
         
-        image_bytes = await image.read()
-        image_part = types.Part.from_bytes(data=image_bytes, mime_type=image.content_type)
-        contents = [prompt, image_part]
+        # Process all images
+        contents = [prompt]
+        for image in images:
+            image_bytes = await image.read()
+            image_part = types.Part.from_bytes(data=image_bytes, mime_type=image.content_type)
+            contents.append(image_part)
+        
         resp = client.models.generate_content(
             model=MODEL_NAME,
             contents=contents,
@@ -107,5 +127,41 @@ async def eval_style(image: UploadFile = File(...), prompt: str = None):
         raise
     except Exception as e:
         print("ERROR in /eval-style:", repr(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
+
+@app.post("/search-terms", response_model=SearchResponse)
+async def search_terms(req: SearchRequest):
+    try:
+        style_profile = req.profile
+        weather = req.weather
+        looking_for = req.looking_for
+        if not style_profile:
+            raise HTTPException(status_code=400, detail="Style response is required")
+        
+        if not looking_for:
+            looking_for = "any"
+        
+        prompt = load_prompt(
+            "search-terms",
+            ""
+        ).replace("<styledesc>", json.dumps(style_profile)).replace("<weather>", json.dumps(weather)).replace("<looking_for>", looking_for)
+        contents = [prompt]
+
+        resp = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=contents,
+        )
+        answer = (resp.text or "").strip()
+        if not answer:
+            raise HTTPException(status_code=502, detail="Gemini returned empty text")
+        
+        json_answer = extract_json(answer, '[', ']')
+        
+        return {"answer": json_answer}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERROR in /search-terms:", repr(e))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
