@@ -22,7 +22,7 @@ export default function Header({
               width: 36,
               height: 36,
               borderRadius: 12,
-              background: "linear-gradient(135deg, #646cff, #61dafb)",
+              background: "linear-gradient(135deg, #000000, #ffffff)",
               boxShadow: "0 10px 30px rgba(100,108,255,0.25)",
             }}
             aria-hidden="true"

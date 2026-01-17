@@ -3,17 +3,18 @@
  * ----------
  * This file is the ONLY place where the frontend talks to the backend.
  *
- *  - flip USE_MOCK to false (or use an env var)
- *  - ensure backend endpoints match the contracts documented below
+ * Combined identity flow:
+ *  - Upload multiple images
+ *  - POST /analyze/batch (multipart, "files" repeated) -> IdentityResult
+ *  - POST /recommend (json, "style") -> Recommendation[]
  */
 
-import type { Recommendation, StyleDNA } from "../types";
+import type { IdentityResult, Recommendation, StyleDesc } from "../types";
 
 /**
  * Toggle for demo mode.
  * - true  → use local mock data (frontend works without backend)
  * - false → call real FastAPI backend
- *
  */
 const USE_MOCK = true;
 
@@ -22,157 +23,131 @@ const USE_MOCK = true;
  * FastAPI should run at this address.
  *
  * Example:
- *   uvicorn main:app --port 8000
+ *   uvicorn main:app --reload --port 8000
  */
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
 /**
- * ANALYZE IMAGE
- * -------------
- * Called when user clicks "Analyze".
+ * ANALYZE (BATCH)
+ * --------------
+ * Sends multiple images to backend to generate ONE combined identity JSON.
  *
  * Frontend sends:
- *   POST /analyze
+ *   POST /analyze/batch
  *   Content-Type: multipart/form-data
  *   Body:
- *     - file: image file (JPG / PNG / WebP)
+ *     - files: <file1>
+ *     - files: <file2>
+ *     - files: <file3> ...
  *
- * Backend MUST return JSON shaped like:
+ * Backend MUST return IdentityResult JSON:
  * {
- *   "style_dna": {
- *     "palette": string[],
- *     "vibe": string[],
- *     "silhouette": string[],
- *     "avoid"?: string[]
- *   }
+ *   "current_style": { ...styledesc... },
+ *   "current_summary": "...",
+ *   "current_score": 1-10,
+ *   "improved_style": { ...styledesc... }
  * }
- *
- * The returned style_dna is passed directly into the UI.
  */
-export async function analyzeImage(file: File): Promise<StyleDNA> {
-  // Demo / offline mode
-  if (USE_MOCK) return mockAnalyze(file);
+export async function analyzeBatch(files: File[]): Promise<IdentityResult> {
+  if (USE_MOCK) return mockAnalyzeBatch(files);
 
-  // Build multipart form data
   const fd = new FormData();
-  fd.append("file", file);
+  for (const f of files) fd.append("files", f); // key MUST match backend (files)
 
-  // Call backend
-  const res = await fetch(`${API_BASE}/analyze`, {
+  const res = await fetch(`${API_BASE}/analyze/batch`, {
     method: "POST",
     body: fd,
   });
 
   if (!res.ok) {
-    throw new Error("analyze failed");
+    const text = await res.text().catch(() => "");
+    throw new Error(`analyze batch failed (${res.status}): ${text}`);
   }
 
-  const data = await res.json();
-
-  // Backend → frontend mapping happens HERE
-  // UI assumes StyleDNA shape defined in src/types
-  return data.style_dna as StyleDNA;
+  return (await res.json()) as IdentityResult;
 }
 
 /**
  * GET RECOMMENDATIONS
  * -------------------
- * Called after Style DNA is available.
+ * Uses the combined identity's style (usually improved_style) to fetch products.
  *
  * Frontend sends:
  *   POST /recommend
  *   Content-Type: application/json
  *   Body:
  *     {
- *       "style_dna": StyleDNA
+ *       "style": StyleDesc
  *     }
  *
  * Backend MUST return JSON shaped like:
  * {
  *   "recommendations": Recommendation[]
  * }
- *
- * Each Recommendation should contain:
- *  - title (string)
- *  - price? (string)
- *  - imageUrl? (string)
- *  - productUrl? (string)
- *  - reasons (string[])
  */
-export async function getRecommendations(
-  styleDna: StyleDNA
-): Promise<Recommendation[]> {
-  // Demo / offline mode
-  if (USE_MOCK) return mockRecommend(styleDna);
+export async function getRecommendations(style: StyleDesc): Promise<Recommendation[]> {
+  if (USE_MOCK) return mockRecommend(style);
 
   const res = await fetch(`${API_BASE}/recommend`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ style_dna: styleDna }),
+    body: JSON.stringify({ style }),
   });
 
   if (!res.ok) {
-    throw new Error("recommend failed");
+    const text = await res.text().catch(() => "");
+    throw new Error(`recommend failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-
-  // Backend → frontend mapping happens HERE
   return data.recommendations as Recommendation[];
 }
 
-/* MOCK IMPLEMENTATIONS (Frontend-only demo mode)                      */
-/**
- * Fake vision model output.
- * Allows frontend to be developed and demoed without backend running.
- */
-async function mockAnalyze(_file: File): Promise<StyleDNA> {
+/* ---------- MOCK IMPLEMENTATIONS (Frontend-only demo mode) ---------- */
+
+async function mockAnalyzeBatch(_files: File[]): Promise<IdentityResult> {
   await new Promise((r) => setTimeout(r, 700));
   return {
-    palette: ["black", "white", "neutral"],
-    vibe: ["minimal streetwear", "clean"],
-    silhouette: ["oversized tops", "straight pants"],
-    avoid: ["neon", "busy patterns"],
+    current_style: {
+      name: "minimal streetwear / clean basics",
+      colors: ["charcoal neutrals", "soft white", "washed denim"],
+      hexcolors: ["#1A1A1A", "#F2F2F2", "#3A3F4B"],
+      fit: "relaxed tops, straight-leg bottoms",
+      textures: "matte cotton, fleece, light denim; low-contrast solids; minimal graphics",
+      layering: "light-midweight; hoodie/jacket over tee; simple stacking",
+      accessories: ["white sneakers", "cap", "silver chain"],
+    },
+    current_summary:
+      "neutral base; clean silhouettes; consistent streetwear; improve: 1 statement layer, sharper color harmony, upgraded accessories",
+    current_score: 7,
+    improved_style: {
+      name: "refined minimal streetwear (sharp + elevated)",
+      colors: ["deep charcoal + off-white", "cool slate accents", "muted olive option"],
+      hexcolors: ["#0F1115", "#EEEDE8", "#49556A", "#5A6B3E"],
+      fit: "structured outerwear; relaxed top; tapered/straight bottom",
+      textures: "wool-blend overshirt, twill, premium cotton; subtle texture contrast",
+      layering: "intentional 2-layer looks; overshirt/bomber + tee; clean proportions",
+      accessories: ["leather belt", "minimal watch", "clean tote", "simple silver jewelry"],
+    },
   };
 }
 
-/**
- * Fake recommendation engine output.
- * Simulates Shopify-style product picks.
- */
-async function mockRecommend(_styleDna: StyleDNA): Promise<Recommendation[]> {
+async function mockRecommend(_style: StyleDesc): Promise<Recommendation[]> {
   await new Promise((r) => setTimeout(r, 700));
   return [
     {
-      title: "Oversized Black Hoodie",
-      price: "$59",
-      imageUrl: "https://via.placeholder.com/600x600?text=Hoodie",
-      productUrl: "#",
-      reasons: [
-        "Matches your neutral palette",
-        "Oversized silhouette",
-        "Streetwear vibe",
-      ],
-    },
-    {
-      title: "Straight-Leg Denim (Black)",
-      price: "$79",
-      imageUrl: "https://via.placeholder.com/600x600?text=Denim",
-      productUrl: "#",
-      reasons: [
-        "Straight fit aligns with your silhouette",
-        "Black matches palette",
-      ],
-    },
-    {
-      title: "Clean White Sneakers",
+      title: "Charcoal Overshirt Jacket",
       price: "$89",
-      imageUrl: "https://via.placeholder.com/600x600?text=Sneakers",
+      imageUrl: "https://via.placeholder.com/600x600?text=Overshirt",
       productUrl: "#",
-      reasons: [
-        "Minimal + clean vibe",
-        "White fits palette",
-      ],
+      reasons: ["Structured layer", "Matches charcoal palette", "Elevates fit"],
+    },
+    {
+      title: "Off-White Heavyweight Tee",
+      price: "$39",
+      imageUrl: "https://via.placeholder.com/600x600?text=Tee",
+      productUrl: "#",
+      reasons: ["Premium basic", "Clean silhouette", "Great base for layering"],
     },
   ];
 }
