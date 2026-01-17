@@ -16,7 +16,7 @@ import type { IdentityResult, Recommendation, StyleDesc } from "../types";
  * - true  → use local mock data (frontend works without backend)
  * - false → call real FastAPI backend
  */
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 /**
  * Base URL for backend API.
@@ -25,82 +25,51 @@ const USE_MOCK = true;
  * Example:
  *   uvicorn main:app --reload --port 8000
  */
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
 
 /**
- * ANALYZE (BATCH)
- * --------------
- * Sends multiple images to backend to generate ONE combined identity JSON.
- *
- * Frontend sends:
- *   POST /analyze/batch
- *   Content-Type: multipart/form-data
- *   Body:
- *     - files: <file1>
- *     - files: <file2>
- *     - files: <file3> ...
- *
- * Backend MUST return IdentityResult JSON:
- * {
- *   "current_style": { ...styledesc... },
- *   "current_summary": "...",
- *   "current_score": 1-10,
- *   "improved_style": { ...styledesc... }
- * }
+ * ANALYZE (CONNECTED TO BACKEND)
+ * ------------------------------
+ * When USE_MOCK === false:
+ *  - POST /eval-style
+ *  - multipart/form-data
+ *  - field name: "images"
+ *  - response: { answer: IdentityResult }
  */
 export async function analyzeBatch(files: File[]): Promise<IdentityResult> {
   if (USE_MOCK) return mockAnalyzeBatch(files);
 
   const fd = new FormData();
-  for (const f of files) fd.append("files", f); // key MUST match backend (files)
 
-  const res = await fetch(`${API_BASE}/analyze/batch`, {
+  // MUST be "images" to match FastAPI signature:
+  // eval_style(images: List[UploadFile] = File(...))
+  for (const f of files) fd.append("images", f);
+
+  // Call backend API
+  const res = await fetch(`${API_BASE}/eval-style`, {
     method: "POST",
     body: fd,
   });
 
+  // Handle errors
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`analyze batch failed (${res.status}): ${text}`);
+    throw new Error(`eval-style failed (${res.status}): ${text}`);
   }
 
-  return (await res.json()) as IdentityResult;
+  // Parse response
+  const data = await res.json();
+  return data.answer as IdentityResult;
 }
 
 /**
- * GET RECOMMENDATIONS
- * -------------------
- * Uses the combined identity's style (usually improved_style) to fetch products.
- *
- * Frontend sends:
- *   POST /recommend
- *   Content-Type: application/json
- *   Body:
- *     {
- *       "style": StyleDesc
- *     }
- *
- * Backend MUST return JSON shaped like:
- * {
- *   "recommendations": Recommendation[]
- * }
+ * RECOMMENDATIONS (STILL MOCKED)
+ * -----------------------------
+ * Backend search / Shopify not implemented yet.
+ * Keeping this mocked even when USE_MOCK = false.
  */
-export async function getRecommendations(style: StyleDesc): Promise<Recommendation[]> {
-  if (USE_MOCK) return mockRecommend(style);
-
-  const res = await fetch(`${API_BASE}/recommend`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ style }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`recommend failed (${res.status}): ${text}`);
-  }
-
-  const data = await res.json();
-  return data.recommendations as Recommendation[];
+export async function getRecommendations(_style: StyleDesc): Promise<Recommendation[]> {
+  return mockRecommend(_style);
 }
 
 /* ---------- MOCK IMPLEMENTATIONS (Frontend-only demo mode) ---------- */
