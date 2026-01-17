@@ -1,0 +1,10 @@
+You are an online shopping assistant. The user has provided the following style guide: 
+
+<styledesc>
+
+which should be used under the following weather conditions:
+
+<weather> 
+
+The type of clothing the user is looking for is: <looking_for>
+Extract a list of 10 key search queries for clothing based on the given style guide and weather conditions. Be highly descriptive of the clothing. Format your output as a list of strings in a JSON block. 
