@@ -7,34 +7,37 @@ function formatTime(ts: number) {
 
 export default function UploadPanel({
   activeRun,
+  runsCount,
   loadingAnalyze,
   loadingRecommend,
-  onPickFile,
-  onAnalyze,
-  onRecommend,
+  canRecommend,
+  onPickFiles,
+  onAnalyzeAll,
+  onRecommendAll,
   onClearSelection,
 }: {
   activeRun: FitRun | null;
+  runsCount: number;
   loadingAnalyze: boolean;
   loadingRecommend: boolean;
-  onPickFile: (file: File) => void;
-  onAnalyze: () => void;
-  onRecommend: () => void;
+  canRecommend: boolean;
+  onPickFiles: (files: File[]) => void;
+  onAnalyzeAll: () => void;
+  onRecommendAll: () => void;
   onClearSelection: () => void;
 }) {
   return (
     <section
+      className="vault-panel fade-up"
       style={{
         textAlign: "left",
         padding: 16,
         borderRadius: 16,
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(255,255,255,0.04)",
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 18 }}>Upload</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2>
       <p style={{ margin: "6px 0 12px", opacity: 0.75 }}>
-        Choose an image (JPG/PNG/WebP). We’ll extract style signals and recommend products.
+        Upload multiple fits. We mint one combined Fashion Identity from the full set.
       </p>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -49,36 +52,34 @@ export default function UploadPanel({
             background: "rgba(255,255,255,0.08)",
             cursor: "pointer",
             userSelect: "none",
-            fontWeight: 600,
+            fontWeight: 700,
           }}
         >
-          Upload image
+          Capture fits
           <input
             type="file"
+            multiple
             accept="image/png,image/jpeg,image/webp"
             style={{ display: "none" }}
             onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPickFile(f);
-              e.currentTarget.value = ""; // allow re-upload same file
+              const files = Array.from(e.target.files ?? []);
+              if (files.length) onPickFiles(files);
+              e.currentTarget.value = "";
             }}
           />
         </label>
 
-        <button
-          onClick={onAnalyze}
-          disabled={!activeRun || loadingAnalyze}
-          style={{ opacity: !activeRun || loadingAnalyze ? 0.6 : 1 }}
-        >
-          {loadingAnalyze ? "Analyzing..." : "Analyze"}
+        <button onClick={onAnalyzeAll} disabled={runsCount === 0 || loadingAnalyze}>
+          {loadingAnalyze ? "Minting..." : `Mint Style Identity (${runsCount})`}
         </button>
 
         <button
-          onClick={onRecommend}
-          disabled={!activeRun?.styleDna || loadingRecommend}
-          style={{ opacity: !activeRun?.styleDna || loadingRecommend ? 0.6 : 1 }}
+          className="btn-primary"
+          onClick={onRecommendAll}
+          disabled={!canRecommend || loadingRecommend}
+          style={{ opacity: !canRecommend || loadingRecommend ? 0.6 : 1 }}
         >
-          {loadingRecommend ? "Loading..." : "Get recommendations"}
+          {loadingRecommend ? "Matching..." : "Generate Matches"}
         </button>
 
         {activeRun && (

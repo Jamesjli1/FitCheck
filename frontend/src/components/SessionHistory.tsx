@@ -5,6 +5,10 @@ function formatTime(ts: number) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function truncate(name: string, n = 18) {
+  return name.length > n ? name.slice(0, n) + "…" : name;
+}
+
 export default function SessionHistory({
   runs,
   activeId,
@@ -20,6 +24,7 @@ export default function SessionHistory({
 }) {
   return (
     <section
+      className="vault-panel fade-up"
       style={{
         textAlign: "left",
         padding: 16,
@@ -29,14 +34,17 @@ export default function SessionHistory({
       }}
     >
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>This session</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded 
+        </h2>
         <div style={{ opacity: 0.75, fontSize: 13 }}>
           {runs.length} / {maxImages}
         </div>
       </div>
 
       {runs.length === 0 ? (
-        <p style={{ opacity: 0.75, marginTop: 10 }}>No uploads yet.</p>
+        <p style={{ opacity: 0.75, marginTop: 10 }}>
+          No fits captured yet. Upload multiple images to build your identity.
+        </p>
       ) : (
         <div
           style={{
@@ -48,9 +56,11 @@ export default function SessionHistory({
         >
           {runs.map((r) => {
             const isActive = r.id === activeId;
+
             return (
               <div
                 key={r.id}
+                className={isActive ? "card-active" : "card-hover"}
                 style={{
                   borderRadius: 14,
                   border: isActive
@@ -60,6 +70,7 @@ export default function SessionHistory({
                   overflow: "hidden",
                 }}
               >
+                {/* Clickable preview */}
                 <button
                   onClick={() => onSelect(r.id)}
                   style={{
@@ -68,35 +79,46 @@ export default function SessionHistory({
                     display: "block",
                     width: "100%",
                   }}
-                  title="View this run"
+                  title="Select this fit"
                 >
                   <div style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden" }}>
                     <img
                       src={r.imagePreviewUrl}
-                      alt="Run preview"
+                      alt={r.imageFile.name}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />
                   </div>
+
                   <div style={{ padding: 10 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13 }}>
-                      {r.imageFile.name.length > 18 ? r.imageFile.name.slice(0, 18) + "…" : r.imageFile.name}
+                    <div style={{ fontWeight: 800, fontSize: 13 }}>
+                      {truncate(r.imageFile.name)}
                     </div>
-                    <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>{formatTime(r.createdAt)}</div>
+                    <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>
+                      {formatTime(r.createdAt)}
+                    </div>
+
                     <div style={{ marginTop: 8, opacity: 0.8, fontSize: 12 }}>
-                      {r.styleDna ? (
-                        <>
-                          <div>• {r.styleDna.vibe[0] ?? "Style ready"}</div>
-                          <div>• {r.styleDna.palette[0] ?? "Palette"}</div>
-                        </>
-                      ) : (
-                        <div>• Not analyzed yet</div>
-                      )}
+                      {isActive ? "• Selected" : "• Captured"}
                     </div>
                   </div>
                 </button>
 
+                {/* Actions */}
                 <div style={{ display: "flex", gap: 8, padding: 10, paddingTop: 0 }}>
-                  <button onClick={() => onRemove(r.id)} style={{ width: "100%", opacity: 0.85 }}>
+                  <button
+                    onClick={() => onRemove(r.id)}
+                    style={{
+                      width: "100%",
+                      opacity: 0.9,
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.06)",
+                      padding: "8px 10px",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
+                    title="Remove this fit"
+                  >
                     Remove
                   </button>
                 </div>

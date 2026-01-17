@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import type { FitRun } from "../types";
-import { analyzeImage, getRecommendations } from "../api/client";
+import type { FitRun, IdentityResult, Recommendation } from "../types";
+import { analyzeBatch, getRecommendations } from "../api/client";
 
 import Header from "../components/Header";
 import UploadPanel from "../components/UploadPanel";
@@ -18,8 +18,13 @@ function uid() {
 }
 
 export default function FitCheckPage() {
+  // Ledger of uploaded images (for thumbnails/history)
   const [runs, setRuns] = useState<FitRun[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Session-level combined outputs
+  const [identity, setIdentity] = useState<IdentityResult | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
 
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
   const [loadingRecommend, setLoadingRecommend] = useState(false);
@@ -30,45 +35,65 @@ export default function FitCheckPage() {
     [runs, activeId]
   );
 
-  function setActiveRunPatch(patch: Partial<FitRun>) {
-    if (!activeId) return;
-    setRuns((prev) => prev.map((r) => (r.id === activeId ? { ...r, ...patch } : r)));
-  }
-
   function validateFile(file: File): string | null {
     if (!ALLOWED_TYPES.has(file.type)) return "Please upload a JPG, PNG, or WebP image.";
     if (file.size > MAX_FILE_BYTES) return `File too large. Max size is ${MAX_FILE_MB}MB.`;
-    if (runs.length >= MAX_IMAGES_PER_SESSION)
-      return `Session limit reached (${MAX_IMAGES_PER_SESSION} images). Remove one or refresh.`;
     return null;
   }
 
-  function handlePickFile(file: File) {
-    const msg = validateFile(file);
-    if (msg) return setError(msg);
+  // Multi-file upload: add all valid files as runs (ledger entries)
+  function handlePickFiles(files: File[]) {
     setError(null);
 
-    const id = uid();
-    const preview = URL.createObjectURL(file);
+    const remaining = MAX_IMAGES_PER_SESSION - runs.length;
+    if (remaining <= 0) {
+      setError(`Session limit reached (${MAX_IMAGES_PER_SESSION}). Remove one or refresh.`);
+      return;
+    }
 
-    const newRun: FitRun = {
-      id,
-      createdAt: Date.now(),
-      imageFile: file,
-      imagePreviewUrl: preview,
-    };
+    const slice = files.slice(0, remaining);
+    if (files.length > slice.length) {
+      setError(`Only ${remaining} more images allowed this session.`);
+    }
 
-    setRuns((prev) => [newRun, ...prev]);
-    setActiveId(id);
+    const newRuns: FitRun[] = [];
+    for (const file of slice) {
+      const msg = validateFile(file);
+      if (msg) {
+        setError(msg);
+        continue; // skip invalid files but keep the rest
+      }
+
+      const id = uid();
+      const preview = URL.createObjectURL(file);
+
+      newRuns.push({
+        id,
+        createdAt: Date.now(),
+        imageFile: file,
+        imagePreviewUrl: preview,
+      });
+    }
+
+    if (newRuns.length) {
+      setRuns((prev) => [...newRuns, ...prev]);
+      setActiveId((prev) => prev ?? newRuns[0].id);
+      // If user uploads new images, the combined identity is now stale
+      setIdentity(null);
+      setRecommendations(null);
+    }
   }
 
-  async function handleAnalyze() {
-    if (!activeRun) return setError("Upload an image first.");
+  // Combined analyze: sends ALL images to backend and gets ONE IdentityResult
+  async function handleAnalyzeAll() {
+    if (runs.length === 0) return setError("Upload at least one image first.");
     setError(null);
     setLoadingAnalyze(true);
+
     try {
-      const styleDna = await analyzeImage(activeRun.imageFile);
-      setActiveRunPatch({ styleDna });
+      const result = await analyzeBatch(runs.map((r) => r.imageFile));
+      setIdentity(result);
+      setRecommendations(null); // reset recs after new identity
     } catch {
       setError("Analyze failed. Is the backend running?");
     } finally {
@@ -76,13 +101,15 @@ export default function FitCheckPage() {
     }
   }
 
-  async function handleRecommend() {
-    if (!activeRun?.styleDna) return setError("Analyze first to generate Style DNA.");
+  // Combined recommend: uses improved_style as the target identity for product picks
+  async function handleRecommendAll() {
+    if (!identity) return setError("Mint your identity first (Analyze).");
     setError(null);
     setLoadingRecommend(true);
+
     try {
-      const recs = await getRecommendations(activeRun.styleDna);
-      setActiveRunPatch({ recommendations: recs });
+      const recs = await getRecommendations(identity.improved_style);
+      setRecommendations(recs);
     } catch {
       setError("Recommendation failed. Is the backend running?");
     } finally {
@@ -94,8 +121,15 @@ export default function FitCheckPage() {
     setRuns((prev) => {
       const removing = prev.find((r) => r.id === id);
       if (removing) URL.revokeObjectURL(removing.imagePreviewUrl);
+
       const next = prev.filter((r) => r.id !== id);
+
       if (activeId === id) setActiveId(next[0]?.id ?? null);
+
+      // Any change to the set of images invalidates combined identity
+      setIdentity(null);
+      setRecommendations(null);
+
       return next;
     });
   }
@@ -106,6 +140,7 @@ export default function FitCheckPage() {
 
       {error && (
         <div
+          className="vault-panel fade-up"
           style={{
             textAlign: "left",
             padding: 12,
@@ -120,17 +155,19 @@ export default function FitCheckPage() {
 
       <UploadPanel
         activeRun={activeRun}
+        runsCount={runs.length}
         loadingAnalyze={loadingAnalyze}
         loadingRecommend={loadingRecommend}
-        onPickFile={handlePickFile}
-        onAnalyze={handleAnalyze}
-        onRecommend={handleRecommend}
+        canRecommend={!!identity}
+        onPickFiles={handlePickFiles}
+        onAnalyzeAll={handleAnalyzeAll}
+        onRecommendAll={handleRecommendAll}
         onClearSelection={() => setActiveId(null)}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <StyleDNASection styleDna={activeRun?.styleDna} />
-        <RecommendationsSection recommendations={activeRun?.recommendations} />
+        <StyleDNASection identity={identity} />
+        <RecommendationsSection recommendations={recommendations ?? undefined} />
       </div>
 
       <SessionHistory

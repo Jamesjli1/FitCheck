@@ -7,20 +7,19 @@ export default function RecommendationsSection({
 }) {
   return (
     <section
+      className="vault-panel fade-up"
       style={{
         textAlign: "left",
         padding: 16,
         borderRadius: 16,
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(255,255,255,0.04)",
-        minHeight: 220,
+        minHeight: 260,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 18 }}>Recommendations</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>Matches for You</h2>
 
       {!recommendations?.length ? (
         <p style={{ opacity: 0.75, marginTop: 10 }}>
-          Generate recommendations after Style DNA is ready.
+          Generate matches after your Fashion Identity is minted.
         </p>
       ) : (
         <div
@@ -35,6 +34,7 @@ export default function RecommendationsSection({
             <a
               key={p.title}
               href={p.productUrl ?? "#"}
+              className="card-hover"
               style={{
                 textDecoration: "none",
                 color: "inherit",
@@ -42,6 +42,7 @@ export default function RecommendationsSection({
                 border: "1px solid rgba(255,255,255,0.12)",
                 background: "rgba(0,0,0,0.12)",
                 overflow: "hidden",
+                display: "block",
               }}
             >
               <div style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden" }}>
@@ -52,7 +53,7 @@ export default function RecommendationsSection({
                 />
               </div>
               <div style={{ padding: 10 }}>
-                <div style={{ fontWeight: 700, lineHeight: 1.2 }}>{p.title}</div>
+                <div style={{ fontWeight: 800, lineHeight: 1.2 }}>{p.title}</div>
                 {p.price && <div style={{ opacity: 0.8, marginTop: 4 }}>{p.price}</div>}
                 <div style={{ marginTop: 8, opacity: 0.8, fontSize: 12 }}>
                   {p.reasons.slice(0, 2).map((r) => (
