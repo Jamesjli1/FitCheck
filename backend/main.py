@@ -10,6 +10,7 @@ import base64
 from google.genai import types
 from typing import Any, List
 import requests
+from utils import compress_image
 
 from google import genai
 
@@ -126,8 +127,9 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
         # iteratively add all images to the content
         for image in images:
             image_bytes = await image.read()
-            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
-            data_url = f"data:image/{image.content_type};base64,{image_base64}"
+            compressed_bytes, mime_type = compress_image(image_bytes, image.content_type)
+            image_base64 = base64.b64encode(compressed_bytes).decode('utf-8')
+            data_url = f"data:image/{mime_type};base64,{image_base64}"
             content.append({"type": "image_url", "image_url": {"url": data_url}})
         
         messages = [{"role": "user", "content": content}]
@@ -164,7 +166,7 @@ async def search_terms(req: SearchRequest):
         ).replace("<styledesc>", json.dumps(style_profile)).replace("<weather>", json.dumps(weather)).replace("<looking_for>", looking_for)
 
         resp = openrouter_post([{"role": "user", "content": prompt}])
-        answer = (resp.text or "").strip()
+        answer = (resp["choices"][0]["message"]["content"] or "").strip()
         if not answer:
             raise HTTPException(status_code=502, detail="Model returned empty text")
         
