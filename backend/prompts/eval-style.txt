@@ -5,7 +5,7 @@ Your response should be a json in the following format:
 
 {
     "current_style": the style most commonly seen among the given photos, in the format of <styledesc>,
-    "current_summary": a well-formatted paragraph summary of the above style description,
+    "current_summary": a well-formatted paragraph summary of the above style description, including suggestions on aspects that can be improved
     "current_score": an integer from 1 to 10
     - 1: the current style is in urgent need of improvement
     - 10: impeccable style
