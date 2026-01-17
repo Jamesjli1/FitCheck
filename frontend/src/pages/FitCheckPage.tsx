@@ -141,9 +141,6 @@ export default function FitCheckPage() {
         onRemove={handleRemoveRun}
       />
 
-      <footer style={{ opacity: 0.65, fontSize: 13, padding: "6px 0" }}>
-        Tip: this demo saves runs in memory (no DB). Refresh clears session history.
-      </footer>
     </div>
   );
 }
