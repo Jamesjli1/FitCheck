@@ -77,7 +77,7 @@ export default function FitCheckPage() {
 
     if (newRuns.length) {
       setRuns((prev) => [...newRuns, ...prev]);
-      setActiveId((prev) => prev ?? newRuns[0].id);
+      setActiveId(newRuns[0].id);
       // If user uploads new images, the combined identity is now stale
       setIdentity(null);
       setRecommendations(null);
