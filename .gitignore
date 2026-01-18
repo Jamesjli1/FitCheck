@@ -1,7 +1,23 @@
-.DS_Store
-**/.DS_Store
-.venv/
+# ======================
+# Python
+# ======================
 __pycache__/
-.env
-backend/.venv/
 *.pyc
+*.pyo
+
+# Virtual environments (anywhere)
+.venv/
+venv/
+**/.venv/
+**/venv/
+
+# Environment variables
+.env
+**/.env
+
+node_modules/
+**/node_modules/
+
+.DS_Store
+.vscode/
+.idea/
