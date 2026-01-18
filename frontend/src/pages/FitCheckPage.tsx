@@ -169,7 +169,17 @@ export default function FitCheckPage() {
         onPickFiles={handlePickFiles}
         onAnalyzeAll={handleAnalyzeAll}
         onRecommendAll={handleRecommendAll}
-        onClearSelection={() => setActiveId(null)}
+        onClearSelection={() => {
+          // free blob URLs so you don't leak memory
+          runs.forEach((r) => URL.revokeObjectURL(r.imagePreviewUrl));
+
+          // wipe everything
+          setRuns([]);
+          setActiveId(null);
+          setIdentity(null);
+          setRecommendations(null);
+          setError(null);
+        }}
         setMinPrice={setMinPrice}
         setMaxPrice={setMaxPrice}
         setMinStarRating={setMinStarRating}

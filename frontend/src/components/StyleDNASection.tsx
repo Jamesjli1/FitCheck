@@ -224,21 +224,6 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
           
         </div>
 
-        {identity ? (
-          <div
-            className="badge"
-            style={{
-              fontWeight: 900,
-              padding: "8px 12px",
-              borderColor: "rgba(97,218,251,0.22)",
-              background: "rgba(97,218,251,0.08)",
-            }}
-          >
-            Score: {identity.current_score}/10
-          </div>
-        ) : (
-          <div className="badge">Not minted</div>
-        )}
       </div>
 
       {!identity ? (
