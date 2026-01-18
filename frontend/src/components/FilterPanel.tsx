@@ -61,24 +61,7 @@ export default function FilterPanel({
             />
           </div>
 
-          {/* Stars Slider */}
-          <div>
-            <label>Minimum Rating: {minStars}⭐</label>
-            <Slider
-              min={0}
-              max={5}
-              step={0.5}
-              value={minStars}
-              onChange={(value) => {
-                setMinStars(value as number);
-                setMinStarRating(value as number);
-              }}
-              trackStyle={{ backgroundColor: "#007bff" }}
-              handleStyle={{ borderColor: "#007bff" }}
-              railStyle={{ backgroundColor: "#ccc" }}
-              included={true}
-            />
-          </div>
+          
         </div>
 
         {/* RIGHT COLUMN — Dropdown */}
@@ -116,9 +99,9 @@ export default function FilterPanel({
                 color: "#333", // text color
               }}
             >
+              <option value="featured">Featured</option>
               <option value="price-asc">Lowest to Highest Price</option>
               <option value="price-desc">Highest to Lowest Price</option>
-              <option value="rating-desc">Highest Ratings</option>
             </select>
           </div>
         </div>
