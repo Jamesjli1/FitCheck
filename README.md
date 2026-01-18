@@ -1,4 +1,4 @@
-# FitCheck — AI-Powered Style Identity & Shopping Assistant
+# FitCheck - AI-Powered Style Identity & Shopping Assistant
 
 **FitCheck** is an AI-driven fashion assistant that turns outfit photos into a clear **Style Identity** and curated **Shopify product recommendations**. Upload your fits, mint your style DNA, then explore products filtered by price, category, and sorting — all aligned to your *improved* fashion identity. Built for a hackathon with a focus on **AI × Commerce × Identity**.
 
@@ -6,13 +6,13 @@ For UofTHacks 13
 
 ---
 
-## ✨ Features
+## Features
 
-- 📸 **Outfit Uploads**
+- **Outfit Uploads**
   - Upload up to 10 outfit images per session
   - Select / unselect fits to influence your identity
 
-- 🧬 **Style DNA Generation**
+- **Style DNA Generation**
   - AI analyzes selected outfits
   - Generates:
     - Style personality + emoji
@@ -20,14 +20,14 @@ For UofTHacks 13
     - Fit, layering, and accessories
     - Improvement suggestions
 
-- 🛍 **Smart Shopify Recommendations**
+- **Smart Shopify Recommendations**
   - Curated product picks aligned to your *improved* style
   - Category tabs:
     - Topwear
     - Bottomwear
     - Accessories
 
-- 🎛 **Interactive Filters**
+- **Interactive Filters**
   - Price range slider
   - Sort by:
     - Featured
@@ -35,65 +35,7 @@ For UofTHacks 13
     - Highest → Lowest price
   - Live filtering without page reloads
 
-- 🔍 **Product Detail Modal**
-  - Full product preview
-  - Description, sizes, tags, vendor, stock status
-  - Direct link to Shopify product
-
----
-
-## 🧠 Tech Stack
-
-### Frontend
-- **React + TypeScript**
-- Vite
-
-### Backend
-- **FastAPI (Python)**
-- AI analysis endpoint
-- Recommendation generation endpoint
-- Shopify product data integration (mocked or live)
-
-# 👗 FitCheck — AI-Powered Style Identity & Shopping Assistant
-
-**FitCheck** is an AI-driven fashion assistant that turns outfit photos into a clear **Style Identity** and curated **Shopify product recommendations**.
-
-Upload your fits, mint your style DNA, then explore products filtered by price, category, and sorting — all aligned to your *improved* fashion identity.
-
-Built for a hackathon with a focus on **AI × Commerce × Identity**.
-
----
-
-## ✨ Features
-
-- 📸 **Outfit Uploads**
-  - Upload up to 10 outfit images per session
-  - Select / unselect fits to influence your identity
-
-- 🧬 **Style DNA Generation**
-  - AI analyzes selected outfits
-  - Generates:
-    - Style personality + emoji
-    - Color palette & materials
-    - Fit, layering, and accessories
-    - Improvement suggestions
-
-- 🛍 **Smart Shopify Recommendations**
-  - Curated product picks aligned to your *improved* style
-  - Category tabs:
-    - Topwear
-    - Bottomwear
-    - Accessories
-
-- 🎛 **Interactive Filters**
-  - Price range slider
-  - Sort by:
-    - Featured
-    - Lowest → Highest price
-    - Highest → Lowest price
-  - Live filtering without page reloads
-
-- 🔍 **Product Detail Modal**
+- **Product Detail Modal**
   - Full product preview
   - Description, sizes, tags, vendor, stock status
   - Direct link to Shopify product
@@ -105,21 +47,17 @@ Built for a hackathon with a focus on **AI × Commerce × Identity**.
 ### Frontend
 - **React + TypeScript**
 - Vite
-- rc-slider (price range filtering)
-- Custom UI (glassmorphism style)
 
 ### Backend
 - **FastAPI (Python)**
-- AI analysis endpoint
-- Recommendation generation endpoint
-- Shopify product data integration (mocked or live)
+
 
 ### AI / LLM
-- **Gemini** (style analysis / identity extraction)
-- **OpenRouter** (LLM routing + fallback models when needed)
+- **Gemini** (style analysis)
+- **OpenRouter** (LLM routing)
 
 ### Commerce / Product Data
-- **Shopify Admin / UCP API** (Shopify product catalog retrieval)
+- **Shopify UCP API** (Shopify product catalog retrieval)
 
 ---
 
