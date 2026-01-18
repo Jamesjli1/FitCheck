@@ -20,6 +20,7 @@ export default function UploadPanel({
   setMinPrice,
   setMaxPrice,
   setMinStarRating,
+  filterRecommendations,
   children,
 }: {
   activeRun: FitRun | null;
@@ -34,6 +35,7 @@ export default function UploadPanel({
   setMinPrice: (num: number) => void;
   setMaxPrice: (num: number) => void;
   setMinStarRating: (num: number) => void;
+  filterRecommendations: (filter: string) => void;
   children?: ReactNode;
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -130,6 +132,7 @@ export default function UploadPanel({
           setMinPrice={setMinPrice}
           setMaxPrice={setMaxPrice}
           setMinStarRating={setMinStarRating}
+          filterRecommendations={filterRecommendations}
         />
       </div>
 

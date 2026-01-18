@@ -346,11 +346,47 @@ function ProductModal({
 
 export default function RecommendationsSection({
   recommendations,
+  filter
 }: {
   recommendations?: Recommendation[];
+  filter: string;
 }) {
   const items = useMemo(() => (recommendations ?? []).slice(0, 10), [recommendations]);
+  // @ts-ignore
+  // const [currItems, setCurrItems] = useState(items)
   const [selected, setSelected] = useState<Recommendation | null>(null);
+
+  function parsePrice(price?: string | number) {
+  if (typeof price === "number") return price;
+  if (!price) return 0;
+
+  // Remove anything that is not a digit or a dot
+  const cleaned = price.replace(/[^0-9.]/g, "");
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+  const currItems = useMemo(() => {
+  if (!recommendations) return [];
+
+  let sorted = [...recommendations.slice(0, 10)];
+
+  switch (filter) {
+    case "price-asc":
+      sorted.sort((a, b) => parsePrice(a.price || "0") - parsePrice(b.price || "0"));
+      break;
+    case "price-desc":
+      sorted.sort((a, b) => parsePrice(b.price || "0") - parsePrice(a.price || "0"));
+      break;
+    case "rating-desc":
+      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      break;
+  }
+
+  return sorted;
+}, [filter, recommendations]); // ✅ stable
+
+
 
   return (
     <section
@@ -406,7 +442,7 @@ export default function RecommendationsSection({
             gap: 12,
           }}
         >
-          {items.map((p) => (
+          {currItems.map((p) => (
             <div
               key={p.title}
               role="button"
