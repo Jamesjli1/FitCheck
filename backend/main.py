@@ -99,7 +99,7 @@ class SearchTermsResponse(BaseModel):
 
 class SearchTermsRequest(BaseModel):
     profile: dict[str, Any]
-    weather: dict[str, Any]
+    weather: dict[str, Any] | None = None # these two aren't used yet
     looking_for: str | None = None
 
 
@@ -157,23 +157,20 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
 
-
+# Provides the list of 3 suggested search terms for clothing, based on the style JSON
 @app.post("/search-terms", response_model=SearchTermsResponse)
 async def search_terms(req: SearchTermsRequest):
     try:
         style_profile = req.profile
-        weather = req.weather
-        looking_for = req.looking_for
+        #weather = req.weather
+        #looking_for = req.looking_for
         if not style_profile:
             raise HTTPException(status_code=400, detail="Style response is required")
-        
-        if not looking_for:
-            looking_for = "any"
         
         prompt = load_prompt(
             "search-terms",
             ""
-        ).replace("<styledesc>", json.dumps(style_profile)).replace("<weather>", json.dumps(weather)).replace("<looking_for>", looking_for)
+        ).replace("<styledesc>", json.dumps(style_profile))
 
         resp = openrouter_post([{"role": "user", "content": prompt}])
         answer = (resp["choices"][0]["message"]["content"] or "").strip()
