@@ -398,7 +398,6 @@ export default function RecommendationsSection({
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Pill text="Shopify picks" />
-          <Pill text="10 results" />
           <button onClick={() => {
             toggleFilterPage(!filterPage)
           }}>Toggle Button</button>
