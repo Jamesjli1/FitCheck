@@ -63,15 +63,16 @@ export async function analyzeBatch(files: File[]): Promise<IdentityResult> {
 }
 
 /**
- * RECOMMENDATIONS (CONNECTED TO BACKEND)
+ * RECOMMENDATIONS MULTI (CONNECTED TO BACKEND)
  * -----------------------------------------------
- * POST /recommendations
- * Takes the improved_style profile and returns product recommendations
+ * POST /recommendations-multi
+ * Takes the improved_style profile and returns categorized product recommendations
+ * (tops, bottoms, accessories)
  */
-export async function getRecommendations(style: StyleDesc): Promise<Recommendation[]> {
-  if (USE_MOCK) return mockRecommend(style);
+export async function getRecommendations(style: StyleDesc): Promise<Record<string, Recommendation[]>> {
+  if (USE_MOCK) return mockRecommendMulti();
 
-  const res = await fetch(`${API_BASE}/recommendations`, {
+  const res = await fetch(`${API_BASE}/recommendations-multi`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -87,11 +88,12 @@ export async function getRecommendations(style: StyleDesc): Promise<Recommendati
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`recommendations failed (${res.status}): ${text}`);
+    throw new Error(`recommendations-multi failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-  return data.results as Recommendation[];
+  console.log(data.results)
+  return data.results as Record<string, Recommendation[]>;
 }
 
 /* ---------- MOCK IMPLEMENTATIONS (Frontend-only demo mode) ---------- */
@@ -120,13 +122,15 @@ async function mockAnalyzeBatch(_files: File[]): Promise<IdentityResult> {
       layering: "intentional 2-layer looks; overshirt/bomber + tee; clean proportions",
       accessories: ["leather belt", "minimal watch", "clean tote", "simple silver jewelry"],
     },
+    personality: "calm, intentional, minimalist",
+    emoji: "🎯",
   };
 }
 
-async function mockRecommend(): Promise<Recommendation[]> {
+async function mockRecommendMulti(): Promise<Record<string, Recommendation[]>> {
   await new Promise((r) => setTimeout(r, 600));
 
-  return [
+  const tops: Recommendation[] = [
     {
       id: "overshirt-charcoal",
       title: "Charcoal Wool-Blend Overshirt",
@@ -165,6 +169,9 @@ async function mockRecommend(): Promise<Recommendation[]> {
         "Premium cotton tee built as a foundational layer for minimal fits.",
       reasons: ["Clean base", "Improves layering"],
     },
+  ];
+
+  const bottoms: Recommendation[] = [
     {
       id: "denim-black",
       title: "Straight-Leg Black Denim",
@@ -182,6 +189,25 @@ async function mockRecommend(): Promise<Recommendation[]> {
       reasons: ["Balances oversized tops", "Neutral staple"],
     },
     {
+      id: "chinos-beige",
+      title: "Relaxed Beige Chinos",
+      price: "$65",
+      imageUrl: "https://via.placeholder.com/600x600?text=Chinos",
+      productUrl: "#",
+      rating: 4.4,
+      ratingCount: 189,
+      vendor: "FitCheck Studio",
+      inStock: true,
+      sizes: ["28", "30", "32", "34"],
+      colors: ["Beige"],
+      tags: ["Bottoms"],
+      description: "Versatile chinos for casual and smart-casual looks.",
+      reasons: ["Complements palette", "Versatile"],
+    },
+  ];
+
+  const accessories: Recommendation[] = [
+    {
       id: "sneakers-white",
       title: "Minimal White Sneakers",
       price: "$99",
@@ -196,38 +222,6 @@ async function mockRecommend(): Promise<Recommendation[]> {
       tags: ["Footwear"],
       description: "Clean low-profile sneakers with matte finish.",
       reasons: ["Completes minimal look"],
-    },
-    {
-      id: "hoodie-black",
-      title: "Oversized Black Hoodie",
-      price: "$69",
-      imageUrl: "https://via.placeholder.com/600x600?text=Hoodie",
-      productUrl: "#",
-      rating: 4.5,
-      ratingCount: 411,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["Black"],
-      tags: ["Streetwear"],
-      description: "Relaxed hoodie designed for everyday layering.",
-      reasons: ["Streetwear staple"],
-    },
-    {
-      id: "bomber-slate",
-      title: "Slate Bomber Jacket",
-      price: "$129",
-      imageUrl: "https://via.placeholder.com/600x600?text=Bomber",
-      productUrl: "#",
-      rating: 4.2,
-      ratingCount: 174,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["S", "M", "L"],
-      colors: ["Slate"],
-      tags: ["Outerwear"],
-      description: "Structured bomber with subtle sheen.",
-      reasons: ["Adds polish"],
     },
     {
       id: "cap-black",
@@ -245,53 +239,11 @@ async function mockRecommend(): Promise<Recommendation[]> {
       description: "Clean six-panel cap with no branding.",
       reasons: ["Finishes outfit"],
     },
-    {
-      id: "belt-leather",
-      title: "Leather Belt (Black)",
-      price: "$45",
-      imageUrl: "https://via.placeholder.com/600x600?text=Belt",
-      productUrl: "#",
-      rating: 4.8,
-      ratingCount: 201,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["30", "32", "34", "36"],
-      colors: ["Black"],
-      tags: ["Accessories"],
-      description: "Minimal leather belt with matte buckle.",
-      reasons: ["Elevates details"],
-    },
-    {
-      id: "tote-canvas",
-      title: "Canvas Tote Bag",
-      price: "$49",
-      imageUrl: "https://via.placeholder.com/600x600?text=Tote",
-      productUrl: "#",
-      rating: 4.3,
-      ratingCount: 154,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["One Size"],
-      colors: ["Natural"],
-      tags: ["Accessories"],
-      description: "Durable tote for daily carry.",
-      reasons: ["Functional + clean"],
-    },
-    {
-      id: "watch-minimal",
-      title: "Minimal Steel Watch",
-      price: "$159",
-      imageUrl: "https://via.placeholder.com/600x600?text=Watch",
-      productUrl: "#",
-      rating: 4.9,
-      ratingCount: 433,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["One Size"],
-      colors: ["Silver"],
-      tags: ["Accessories"],
-      description: "Slim steel watch with clean face.",
-      reasons: ["Sharpens identity"],
-    },
   ];
+
+  return {
+    tops,
+    bottoms,
+    accessories,
+  };
 }

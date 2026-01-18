@@ -1,3 +1,4 @@
+// FitCheckPage.tsx
 import { useMemo, useState } from "react";
 import type { FitRun, IdentityResult, Recommendation } from "../types";
 import { analyzeBatch, getRecommendations } from "../api/client";
@@ -17,30 +18,36 @@ function uid() {
   return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
 }
 
+type SortMode = "featured" | "price-asc" | "price-desc";
+
 export default function FitCheckPage() {
   const [runs, setRuns] = useState<FitRun[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const [identity, setIdentity] = useState<IdentityResult | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
+  const [recommendations, setRecommendations] = useState<Record<string, Recommendation[]> | null>(null);
 
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
   const [loadingRecommend, setLoadingRecommend] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeRun = useMemo(() => runs.find((r) => r.id === activeId) ?? null, [runs, activeId]);
+  const activeRun = useMemo(
+    () => runs.find((r) => r.id === activeId) ?? null,
+    [runs, activeId]
+  );
 
-  // Filter Features
+  // ✅ Filter state lives here (single source of truth)
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(500);
-  const [minStarRating, setMinStarRating] = useState(3);
+  const [sortMode, setSortMode] = useState<SortMode>("featured");
 
-  const [filter, setFilter] = useState("");
-
-  const filterRecommendations = (filter: string) => {
-    setFilter(filter);
-    console.log(filter);
-  }
+  const filterRecommendations = (value: string) => {
+    if (value === "featured" || value === "price-asc" || value === "price-desc") {
+      setSortMode(value);
+    } else {
+      setSortMode("featured");
+    }
+  };
 
   function validateFile(file: File): string | null {
     if (!ALLOWED_TYPES.has(file.type)) return "Please upload a JPG, PNG, or WebP image.";
@@ -138,7 +145,9 @@ export default function FitCheckPage() {
   }
 
   const toggleSelect = (id: string) => {
-    setRuns((prevRuns) => prevRuns.map((run) => (run.id === id ? { ...run, selected: !run.selected } : run)));
+    setRuns((prevRuns) =>
+      prevRuns.map((run) => (run.id === id ? { ...run, selected: !run.selected } : run))
+    );
   };
 
   return (
@@ -170,38 +179,41 @@ export default function FitCheckPage() {
         onAnalyzeAll={handleAnalyzeAll}
         onRecommendAll={handleRecommendAll}
         onClearSelection={() => {
-          // free blob URLs so you don't leak memory
           runs.forEach((r) => URL.revokeObjectURL(r.imagePreviewUrl));
-
-          // wipe everything
           setRuns([]);
           setActiveId(null);
           setIdentity(null);
           setRecommendations(null);
           setError(null);
+
+          // optional: reset filters too
+          setMinPrice(0);
+          setMaxPrice(500);
+          setSortMode("featured");
         }}
       />
 
       <SessionHistory
-          runs={runs}
-          activeId={activeId}
-          maxImages={MAX_IMAGES_PER_SESSION}
-          onSelect={setActiveId}
-          onRemove={handleRemoveRun}
-          onToggle={toggleSelect}
-        />
+        runs={runs}
+        activeId={activeId}
+        maxImages={MAX_IMAGES_PER_SESSION}
+        onSelect={setActiveId}
+        onRemove={handleRemoveRun}
+        onToggle={toggleSelect}
+      />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <StyleDNASection identity={identity} />
         <RecommendationsSection
           recommendations={recommendations ?? undefined}
-          filter={filter}
+          filter={sortMode}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          setMinPrice={setMinPrice}
+          setMaxPrice={setMaxPrice}
+          filterRecommendation={filterRecommendations}
         />
-        {/* ✅ same fits strip, now under the commands */}
-        
-
-      {/* ❌ removed SessionHistory from bottom */}
-    </div>
+      </div>
     </div>
   );
 }

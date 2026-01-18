@@ -241,9 +241,9 @@ def search_shopify(req: SearchShopifyRequest):
         }
     ).json()["result"]["content"][0]["text"]
 
-    json_response = extract_json(response)["offers"]
+#     json_response = extract_json(response)["offers"]
 
-    return {"results": json_response}
+#     return {"results": json_response}
 
 
 class RecommendationsRequest(BaseModel):
@@ -255,6 +255,16 @@ class RecommendationsRequest(BaseModel):
 
 class RecommendationsResponse(BaseModel):
     results: List[dict[str, Any]]
+
+class CategorizedRecommendationsRequest(BaseModel):
+    style_name: str
+    colors: List[str]
+    fit: str
+    textures: str
+    accessories: List[str]
+
+class CategorizedRecommendationsResponse(BaseModel):
+    results: dict[str, List[dict[str, Any]]]
 
 @app.post("/recommendations", response_model=RecommendationsResponse)
 def get_recommendations(req: RecommendationsRequest):
@@ -320,5 +330,89 @@ def get_recommendations(req: RecommendationsRequest):
         raise
     except Exception as e:
         print(f"ERROR in /recommendations: {repr(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
+
+
+@app.post("/recommendations-multi", response_model=CategorizedRecommendationsResponse)
+async def get_recommendations_multi(req: CategorizedRecommendationsRequest):
+    """
+    Generate multi-category product recommendations (tops, bottoms, accessories).
+    
+    Calls search_terms to get 3 clothing items, then makes 3 separate Shopify queries.
+    Each query uses style_name and fit as context.
+    """
+    try:
+        # Import Shopify functions here to avoid env var issues on startup
+        from shopfiy_mcp_example import get_token, search_products_by_style, parse_shopify_offers_to_recommendations
+        
+        # Step 1: Get 3 clothing items from search-terms
+        search_terms_req = SearchTermsRequest(profile={
+            "name": req.style_name,
+            "colors": req.colors,
+            "fit": req.fit,
+            "textures": req.textures,
+            "layering": "",
+            "accessories": req.accessories,
+            "hexcolors": []
+        })
+        
+        # Call search_terms asynchronously
+        search_terms_result = await search_terms(search_terms_req)
+        clothing_items = search_terms_result.get("answer", [])
+        
+        if not clothing_items or len(clothing_items) < 3:
+            raise HTTPException(status_code=502, detail="Failed to generate search terms")
+        
+        # Extract the 3 items (tops, bottoms, accessories)
+        tops_item = clothing_items[0]
+        bottoms_item = clothing_items[1]
+        accessories_item = clothing_items[2]
+        
+        # Step 2: Build context from style profile
+        colors_str = ", ".join(req.colors) if req.colors else "neutral tones"
+        context = f"Style: {req.style_name}. Fit: {req.fit}. Colors: {colors_str}"
+        
+        # Step 3: Get Shopify token
+        try:
+            token = get_token()
+        except Exception as e:
+            print(f"Shopify auth failed: {e}")
+            raise HTTPException(status_code=502, detail="Failed to authenticate with Shopify")
+        
+        # Step 4: Make 3 separate Shopify queries and collect results
+        results = {}
+        category_mapping = {
+            "tops": tops_item,
+            "bottoms": bottoms_item,
+            "accessories": accessories_item
+        }
+        
+        for category, item_query in category_mapping.items():
+            try:
+                # Search Shopify for this category
+                mcp_response = search_products_by_style(token, item_query, context, limit=5)
+                
+                # Generate reasons
+                reasons = [
+                    f"Perfect {category} for {req.style_name}",
+                    f"Complements your palette: {colors_str}",
+                    f"Great for {req.fit}" if req.fit else "Great for your style"
+                ]
+                
+                # Parse offers into recommendations
+                recommendations = parse_shopify_offers_to_recommendations(mcp_response, reasons=reasons)
+                results[category] = recommendations
+                
+            except Exception as e:
+                print(f"Shopify search failed for {category}: {e}")
+                results[category] = []
+        
+        return {"results": results}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ERROR in /recommendations-multi: {repr(e)}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
