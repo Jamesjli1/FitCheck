@@ -18,12 +18,12 @@ where a <styledesc> is a JSON object with the following 7 fields:
 ```json
 {
     "name": a name for the style or styles of dress, with descriptive adjectives as needed
-    "colors": a list [] of the dominant color palettes of the outfits, using descriptive language
-    "hexcolors": a list [] of the dominant color palettes of the outfits, using a formatted hex string. Always mute the colors, even if the previous line describes otherwise
+    "colors": a list [] of strings, each one a single color that is common in the outfits, using descriptive but concise language, with regard to color theory
+    "hexcolors": a list [] of hex strings, each one a single color from the outfits. Always mute the hex colors, even if the previous line describes otherwise
     "fit": a brief description the typical fit or silhouette
     "textures": a detailed description of the fabrics, patterns, and textures
     "layering": a description of the layering preferences and thickness
-    "accessories": a list [] of commonly accompanying accessories
+    "accessories": a list [] of fewer than 4 strings, with fewer than 4 words each, describing the most commonly accompanying accessories
 }
 ```
 The comma "," is the preferred punctuation in strings in a <styledesc>
