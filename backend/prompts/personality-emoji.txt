@@ -5,7 +5,7 @@ You are given the following JSON as a description of a style of outfit:
 Based on that outfit style, output the following in JSON format, with the following two fields: 
 ```json
 {
-    "personality": a single word, a *noun* (e.g. "Explorer"), describing the personality and mood of the outfit
+    "personality": a single word, a *noun that indicates a person* (e.g. "Explorer", "Scientist"), describing the personality and mood of the outfit
     "emoji": a 1-emoji string most suited to represent the outfits above. You should NOT use an emoji that directly represent articles of clothing. 
 }
 ```

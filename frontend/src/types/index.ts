@@ -18,6 +18,8 @@ export type IdentityResult = {
   current_summary: string;
   current_score: number; // 1-10
   improved_style: StyleDesc;
+  personality: string;
+  emoji: string;
 };
 
 export type Recommendation = {

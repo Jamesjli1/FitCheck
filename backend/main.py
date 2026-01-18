@@ -195,7 +195,9 @@ class SearchShopifyRequest(BaseModel):
 
 class SearchShopifyResponse(BaseModel):
     results: List[dict[str, Any]]
-
+    
+# Searches a Shopify catalog for products matching the search term
+# for a maximum of `limit` items
 @app.post("/search-shopify", response_model=SearchShopifyResponse)
 def search_shopify(req: SearchShopifyRequest):
     response = requests.post(
