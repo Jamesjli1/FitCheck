@@ -22,7 +22,7 @@ export default function FitCheckPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const [identity, setIdentity] = useState<IdentityResult | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
+  const [recommendations, setRecommendations] = useState<Record<string, Recommendation[]> | null>(null);
 
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
   const [loadingRecommend, setLoadingRecommend] = useState(false);

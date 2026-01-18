@@ -352,49 +352,26 @@ export default function RecommendationsSection({
   setMaxPrice,
   filterRecommendation
 }: {
-  recommendations?: Recommendation[];
+  recommendations?: Record<string, Recommendation[]>;
   filter: string;
   setMinPrice: (int: number) => void;
   setMaxPrice: (int: number) => void;
   filterRecommendation: (filter: string) => void;
 }) {
-  const items = useMemo(() => (recommendations ?? []).slice(0, 10), [recommendations]);
+  
 
   const [filterPage, toggleFilterPage] = useState(false);
+  const [currentTab, setTab] = useState("tops")
 
   // @ts-ignore
   // const [currItems, setCurrItems] = useState(items)
   const [selected, setSelected] = useState<Recommendation | null>(null);
+  const [items, setItems] = useState<Recommendation[]>([]);
 
-  function parsePrice(price?: string | number) {
-  if (typeof price === "number") return price;
-  if (!price) return 0;
+  useEffect(() => {
+    setItems((recommendations != null)? recommendations[currentTab]: [])
+  }, [recommendations, currentTab])
 
-  // Remove anything that is not a digit or a dot
-  const cleaned = price.replace(/[^0-9.]/g, "");
-  const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? 0 : parsed;
-}
-
-  const currItems = useMemo(() => {
-  if (!recommendations) return [];
-
-  let sorted = [...recommendations.slice(0, 10)];
-
-  switch (filter) {
-    case "price-asc":
-      sorted.sort((a, b) => parsePrice(a.price || "0") - parsePrice(b.price || "0"));
-      break;
-    case "price-desc":
-      sorted.sort((a, b) => parsePrice(b.price || "0") - parsePrice(a.price || "0"));
-      break;
-    case "rating-desc":
-      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      break;
-  }
-
-  return sorted;
-}, [filter, recommendations]); // ✅ stable
 
 
 
@@ -462,7 +439,7 @@ export default function RecommendationsSection({
         </div>
       ) : (
         <div>
-          <TopItemCategoryPanel></TopItemCategoryPanel>
+          <TopItemCategoryPanel setTab={setTab}></TopItemCategoryPanel>
           <div
           style={{
             marginTop: 12,
@@ -471,7 +448,7 @@ export default function RecommendationsSection({
             gap: 12,
           }}
         >
-          {currItems.map((p) => (
+          {items.map((p) => (
             <div
               key={p.title}
               role="button"

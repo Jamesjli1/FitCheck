@@ -1,8 +1,17 @@
 import { useState } from "react";
-export default function TopItemCategoryPanel() {
+export default function TopItemCategoryPanel({
+  setTab,
+}: {
+  setTab: (tab: string) => void;
+}) {
   const [activeTab, setActiveTab] = useState<number>(0);
 
-  const tabs = ["Topwear", "Bottomwear", "Accessories"];
+  const tabs = ["Topwear", "Bottomwear", "Accessories"] as const;
+  const tabsName = {
+    "Topwear" : "tops",
+    "Bottomwear" : "bottoms",
+    "Accessories" : "accessories"
+  }
 
   return (
     <div
@@ -10,7 +19,7 @@ export default function TopItemCategoryPanel() {
         display: "flex",
         gap: 6,
         marginTop: 12,
-        marginBottom: -1, 
+        marginBottom: -1,
       }}
     >
       {tabs.map((t, i) => {
@@ -19,7 +28,10 @@ export default function TopItemCategoryPanel() {
         return (
           <button
             key={t}
-            onClick={() => setActiveTab(i)}
+            onClick={() => {
+              setActiveTab(i)
+              setTab(tabsName[t])
+            }}
             style={{
               padding: "8px 16px",
               borderTopLeftRadius: 12,
@@ -41,9 +53,7 @@ export default function TopItemCategoryPanel() {
               cursor: "pointer",
               color: "inherit",
 
-              boxShadow: isActive
-                ? "0 -1px 0 rgba(255,255,255,0.22)"
-                : "none",
+              boxShadow: isActive ? "0 -1px 0 rgba(255,255,255,0.22)" : "none",
             }}
           >
             {t}
