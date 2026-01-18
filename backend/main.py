@@ -139,9 +139,17 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
         if not answer:
             raise HTTPException(status_code=502, detail="Model returned empty text")
         
-        json_answer = extract_json(answer)
+        json_answer_1 = extract_json(answer)
+
+        messages = [{"role": "user", "content": load_prompt("personality-emoji").replace("<styledesc>", json.dumps(json_answer_1))}]
+        resp = openrouter_post(messages)
+        answer = (resp["choices"][0]["message"]["content"] or "").strip()
+        if not answer:
+            raise HTTPException(status_code=502, detail="Model returned empty text")
         
-        return {"answer": json_answer}
+        json_answer_2 = extract_json(answer)
+        
+        return {"answer": {**json_answer_1, **json_answer_2}}
     except HTTPException:
         raise
     except Exception as e:
