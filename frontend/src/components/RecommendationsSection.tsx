@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Recommendation } from "../types";
 import TopItemCategoryPanel from "./TopItemCategoryPanel";
+import FilterPanel from "./FilterPanel";
 
 function roundToHalf(n: number) {
   return Math.round(n * 2) / 2;
@@ -346,12 +347,21 @@ function ProductModal({
 
 export default function RecommendationsSection({
   recommendations,
-  filter
+  filter,
+  setMinPrice,
+  setMaxPrice,
+  filterRecommendation
 }: {
   recommendations?: Recommendation[];
   filter: string;
+  setMinPrice: (int: number) => void;
+  setMaxPrice: (int: number) => void;
+  filterRecommendation: (filter: string) => void;
 }) {
   const items = useMemo(() => (recommendations ?? []).slice(0, 10), [recommendations]);
+
+  const [filterPage, toggleFilterPage] = useState(false);
+
   // @ts-ignore
   // const [currItems, setCurrItems] = useState(items)
   const [selected, setSelected] = useState<Recommendation | null>(null);
@@ -412,10 +422,27 @@ export default function RecommendationsSection({
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Pill text="Shopify picks" />
           <Pill text="10 results" />
-          <button></button>
+          <button onClick={() => {
+            toggleFilterPage(!filterPage)
+          }}>Toggle Button</button>
         </div>
       </div>
       {/* TODO HERE */}
+      <div
+        style={{
+          overflow: "hidden",
+          transition: "max-height 320ms ease, opacity 200ms ease, margin-top 200ms ease",
+          maxHeight: filterPage ? 500 : 0,
+          opacity: filterPage ? 1 : 0,
+          marginTop: filterPage ? 14 : 0,
+        }}
+      >
+        <FilterPanel
+          setMinPrice={setMinPrice}
+          setMaxPrice={setMaxPrice}
+          filterRecommendations={filterRecommendation}
+        />
+      </div>
 
       {!items.length ? (
         <div

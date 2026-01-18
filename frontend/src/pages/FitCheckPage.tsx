@@ -33,7 +33,6 @@ export default function FitCheckPage() {
   // Filter Features
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(500);
-  const [minStarRating, setMinStarRating] = useState(3);
 
   const [filter, setFilter] = useState("");
 
@@ -196,6 +195,9 @@ export default function FitCheckPage() {
         <RecommendationsSection
           recommendations={recommendations ?? undefined}
           filter={filter}
+          setMinPrice={setMinPrice}
+          setMaxPrice={setMaxPrice}
+          filterRecommendation={filterRecommendations}
         />
         {/* ✅ same fits strip, now under the commands */}
         
