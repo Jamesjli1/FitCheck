@@ -143,3 +143,17 @@ button:disabled {
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
   border-color: rgba(97, 218, 251, 0.22);
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+
+  background:
+    radial-gradient(1200px 600px at 30% 0%, rgba(106, 92, 255, 0.28), transparent 60%),
+    radial-gradient(900px 500px at 85% 10%, rgba(97, 218, 251, 0.22), transparent 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+
+  background-repeat: no-repeat;
+}
