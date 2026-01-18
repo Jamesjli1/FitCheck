@@ -40,7 +40,7 @@ export default function UploadPanel({
         borderRadius: 16,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2>
+      {/* <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2> */}
       <p style={{ margin: "6px 0 12px", opacity: 0.75 }}>
         Upload multiple fits. We mint one combined Fashion Identity from the full set.
       </p>
@@ -67,7 +67,7 @@ export default function UploadPanel({
             fontWeight: 700,
           }}
         >
-          Capture fits
+          Upload Fits
           <input
             type="file"
             multiple
@@ -101,7 +101,7 @@ export default function UploadPanel({
         )}
       </div>
 
-      
+    
 
     
 

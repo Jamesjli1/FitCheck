@@ -415,7 +415,7 @@ export default function RecommendationsSection({
         <div>
           <h2 style={{ margin: 0, fontSize: 18 }}>Matches</h2>
           <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
-            Curated picks aligned to your <b>Improved Identity</b>.
+            Curated picks aligned to your <b>IMPROVED STYLE</b>.
           </div>
         </div>
 
