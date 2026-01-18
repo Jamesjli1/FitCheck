@@ -18,9 +18,11 @@ export default function RecommendationsSection({
       <h2 style={{ margin: 0, fontSize: 18 }}>Matches for You</h2>
 
       {!recommendations?.length ? (
-        <p style={{ opacity: 0.75, marginTop: 10 }}>
-          Generate matches after your Fashion Identity is minted.
-        </p>
+        <div>
+          <p style={{ opacity: 0.75, marginTop: 10 }}>
+            Generate matches after your Fashion Identity is minted.
+          </p>
+        </div>
       ) : (
         <div
           style={{
@@ -45,7 +47,13 @@ export default function RecommendationsSection({
                 display: "block",
               }}
             >
-              <div style={{ width: "100%", aspectRatio: "1 / 1", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: "100%",
+                  aspectRatio: "1 / 1",
+                  overflow: "hidden",
+                }}
+              >
                 <img
                   src={p.imageUrl}
                   alt={p.title}
@@ -53,8 +61,12 @@ export default function RecommendationsSection({
                 />
               </div>
               <div style={{ padding: 10 }}>
-                <div style={{ fontWeight: 800, lineHeight: 1.2 }}>{p.title}</div>
-                {p.price && <div style={{ opacity: 0.8, marginTop: 4 }}>{p.price}</div>}
+                <div style={{ fontWeight: 800, lineHeight: 1.2 }}>
+                  {p.title}
+                </div>
+                {p.price && (
+                  <div style={{ opacity: 0.8, marginTop: 4 }}>{p.price}</div>
+                )}
                 <div style={{ marginTop: 8, opacity: 0.8, fontSize: 12 }}>
                   {p.reasons.slice(0, 2).map((r) => (
                     <div key={r}>• {r}</div>

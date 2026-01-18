@@ -37,6 +37,11 @@ export default function FitCheckPage() {
     [runs, activeId]
   );
 
+  // Filter Features
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(500);
+  const [minStarRating, setMinStarRating] = useState(3);
+
   function validateFile(file: File): string | null {
     if (!ALLOWED_TYPES.has(file.type))
       return "Please upload a JPG, PNG, or WebP image.";
@@ -184,6 +189,9 @@ export default function FitCheckPage() {
         onAnalyzeAll={handleAnalyzeAll}
         onRecommendAll={handleRecommendAll}
         onClearSelection={() => setActiveId(null)}
+        setMinPrice={(num) => {setMinPrice(num)}}
+        setMaxPrice={(num) => {setMaxPrice(num)}}
+        setMinStarRating={setMinStarRating}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
