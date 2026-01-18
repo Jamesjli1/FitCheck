@@ -1,275 +1,255 @@
-/**
- * API CLIENT
- * ----------
- * This file is the ONLY place where the frontend talks to the backend.
- *
- * Combined identity flow:
- *  - Upload multiple images
- *  - POST /analyze/batch (multipart, "files" repeated) -> IdentityResult
- *  - POST /recommend (json, "style") -> Recommendation[]
- */
+import type { FitRun } from "../types";
+import { useEffect, useState } from "react";
 
-import type { IdentityResult, Recommendation, StyleDesc } from "../types";
-
-/**
- * Toggle for demo mode.
- * - true  → use local mock data (frontend works without backend)
- * - false → call real FastAPI backend
- */
-const USE_MOCK = false;
-
-/**
- * Base URL for backend API.
- * FastAPI should run at this address.
- *
- * Example:
- *   uvicorn main:app --reload --port 8000
- */
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
-
-/**
- * ANALYZE (CONNECTED TO BACKEND)
- * ------------------------------
- * When USE_MOCK === false:
- *  - POST /eval-style
- *  - multipart/form-data
- *  - field name: "images"
- *  - response: { answer: IdentityResult }
- */
-export async function analyzeBatch(files: File[]): Promise<IdentityResult> {
-  if (USE_MOCK) return mockAnalyzeBatch(files);
-
-  const fd = new FormData();
-
-  // MUST be "images" to match FastAPI signature:
-  // eval_style(images: List[UploadFile] = File(...))
-  for (const f of files) fd.append("images", f);
-
-  // Call backend API
-  const res = await fetch(`${API_BASE}/eval-style`, {
-    method: "POST",
-    body: fd,
-  });
-
-  // Handle errors
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`eval-style failed (${res.status}): ${text}`);
-  }
-
-  // Parse response
-  const data = await res.json();
-  return data.answer as IdentityResult;
+function formatTime(ts: number) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-/**
- * RECOMMENDATIONS (STILL MOCKED)
- * -----------------------------
- * Backend search / Shopify not implemented yet.
- * Keeping this mocked even when USE_MOCK = false.
- */
-export async function getRecommendations(_style: StyleDesc): Promise<Recommendation[]> {
-  return mockRecommend(_style);
+function truncate(name: string, n = 18) {
+  return name.length > n ? name.slice(0, n) + "…" : name;
 }
 
-/* ---------- MOCK IMPLEMENTATIONS (Frontend-only demo mode) ---------- */
+export default function SessionHistory({
+  runs,
+  activeId,
+  maxImages,
+  onSelect,
+  onRemove,
+  onToggle,
+}: {
+  runs: FitRun[];
+  activeId: string | null;
+  maxImages: number;
+  onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
+  onToggle: (id: string) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
 
-async function mockAnalyzeBatch(_files: File[]): Promise<IdentityResult> {
-  await new Promise((r) => setTimeout(r, 700));
-  return {
-    current_style: {
-      name: "minimal streetwear / clean basics",
-      colors: ["charcoal neutrals", "soft white", "washed denim"],
-      hexcolors: ["#1A1A1A", "#F2F2F2", "#3A3F4B"],
-      fit: "relaxed tops, straight-leg bottoms",
-      textures: "matte cotton, fleece, light denim; low-contrast solids; minimal graphics",
-      layering: "light-midweight; hoodie/jacket over tee; simple stacking",
-      accessories: ["white sneakers", "cap", "silver chain"],
-    },
-    current_summary:
-      "neutral base; clean silhouettes; consistent streetwear; improve: 1 statement layer, sharper color harmony, upgraded accessories",
-    current_score: 7,
-    improved_style: {
-      name: "refined minimal streetwear (sharp + elevated)",
-      colors: ["deep charcoal + off-white", "cool slate accents", "muted olive option"],
-      hexcolors: ["#0F1115", "#EEEDE8", "#49556A", "#5A6B3E"],
-      fit: "structured outerwear; relaxed top; tapered/straight bottom",
-      textures: "wool-blend overshirt, twill, premium cotton; subtle texture contrast",
-      layering: "intentional 2-layer looks; overshirt/bomber + tee; clean proportions",
-      accessories: ["leather belt", "minimal watch", "clean tote", "simple silver jewelry"],
-    },
-  };
-}
+  // optional: open whatever is currently selected
+  useEffect(() => {
+    if (activeId) setOpenId(activeId);
+  }, [activeId]);
 
-async function mockRecommend(): Promise<Recommendation[]> {
-  await new Promise((r) => setTimeout(r, 600));
+  // close if the open run was removed
+  useEffect(() => {
+    if (openId && !runs.some((r) => r.id === openId)) setOpenId(null);
+  }, [openId, runs]);
 
-  return [
-    {
-      id: "overshirt-charcoal",
-      title: "Charcoal Wool-Blend Overshirt",
-      price: "$89",
-      imageUrl: "https://via.placeholder.com/600x600?text=Overshirt",
-      productUrl: "#",
-      rating: 4.6,
-      ratingCount: 312,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["XS", "S", "M", "L", "XL"],
-      colors: ["Charcoal"],
-      tags: ["Layering", "Minimal"],
-      description:
-        "Structured overshirt with a clean drape. Designed to sharpen relaxed silhouettes.",
-      reasons: [
-        "Adds structure",
-        "Matches neutral palette",
-        "Ideal outer layer",
-      ],
-    },
-    {
-      id: "tee-offwhite",
-      title: "Heavyweight Off-White Tee",
-      price: "$39",
-      imageUrl: "https://via.placeholder.com/600x600?text=Tee",
-      productUrl: "#",
-      rating: 4.4,
-      ratingCount: 528,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["Off-White"],
-      tags: ["Base Layer"],
-      description:
-        "Premium cotton tee built as a foundational layer for minimal fits.",
-      reasons: ["Clean base", "Improves layering"],
-    },
-    {
-      id: "denim-black",
-      title: "Straight-Leg Black Denim",
-      price: "$79",
-      imageUrl: "https://via.placeholder.com/600x600?text=Denim",
-      productUrl: "#",
-      rating: 4.3,
-      ratingCount: 221,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["28", "30", "32", "34"],
-      colors: ["Black"],
-      tags: ["Bottoms"],
-      description: "Relaxed straight-leg denim with clean structure.",
-      reasons: ["Balances oversized tops", "Neutral staple"],
-    },
-    {
-      id: "sneakers-white",
-      title: "Minimal White Sneakers",
-      price: "$99",
-      imageUrl: "https://via.placeholder.com/600x600?text=Sneakers",
-      productUrl: "#",
-      rating: 4.7,
-      ratingCount: 892,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["8", "9", "10", "11"],
-      colors: ["White"],
-      tags: ["Footwear"],
-      description: "Clean low-profile sneakers with matte finish.",
-      reasons: ["Completes minimal look"],
-    },
-    {
-      id: "hoodie-black",
-      title: "Oversized Black Hoodie",
-      price: "$69",
-      imageUrl: "https://via.placeholder.com/600x600?text=Hoodie",
-      productUrl: "#",
-      rating: 4.5,
-      ratingCount: 411,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["Black"],
-      tags: ["Streetwear"],
-      description: "Relaxed hoodie designed for everyday layering.",
-      reasons: ["Streetwear staple"],
-    },
-    {
-      id: "bomber-slate",
-      title: "Slate Bomber Jacket",
-      price: "$129",
-      imageUrl: "https://via.placeholder.com/600x600?text=Bomber",
-      productUrl: "#",
-      rating: 4.2,
-      ratingCount: 174,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["S", "M", "L"],
-      colors: ["Slate"],
-      tags: ["Outerwear"],
-      description: "Structured bomber with subtle sheen.",
-      reasons: ["Adds polish"],
-    },
-    {
-      id: "cap-black",
-      title: "Minimal Black Cap",
-      price: "$29",
-      imageUrl: "https://via.placeholder.com/600x600?text=Cap",
-      productUrl: "#",
-      rating: 4.1,
-      ratingCount: 98,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["One Size"],
-      colors: ["Black"],
-      tags: ["Accessories"],
-      description: "Clean six-panel cap with no branding.",
-      reasons: ["Finishes outfit"],
-    },
-    {
-      id: "belt-leather",
-      title: "Leather Belt (Black)",
-      price: "$45",
-      imageUrl: "https://via.placeholder.com/600x600?text=Belt",
-      productUrl: "#",
-      rating: 4.8,
-      ratingCount: 201,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["30", "32", "34", "36"],
-      colors: ["Black"],
-      tags: ["Accessories"],
-      description: "Minimal leather belt with matte buckle.",
-      reasons: ["Elevates details"],
-    },
-    {
-      id: "tote-canvas",
-      title: "Canvas Tote Bag",
-      price: "$49",
-      imageUrl: "https://via.placeholder.com/600x600?text=Tote",
-      productUrl: "#",
-      rating: 4.3,
-      ratingCount: 154,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["One Size"],
-      colors: ["Natural"],
-      tags: ["Accessories"],
-      description: "Durable tote for daily carry.",
-      reasons: ["Functional + clean"],
-    },
-    {
-      id: "watch-minimal",
-      title: "Minimal Steel Watch",
-      price: "$159",
-      imageUrl: "https://via.placeholder.com/600x600?text=Watch",
-      productUrl: "#",
-      rating: 4.9,
-      ratingCount: 433,
-      vendor: "FitCheck Studio",
-      inStock: true,
-      sizes: ["One Size"],
-      colors: ["Silver"],
-      tags: ["Accessories"],
-      description: "Slim steel watch with clean face.",
-      reasons: ["Sharpens identity"],
-    },
-  ];
+  return (
+    <section
+      className="vault-panel fade-up"
+      style={{
+        textAlign: "left",
+        padding: 16,
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.12)",
+        background: "rgba(255,255,255,0.04)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded</h2>
+        <div style={{ opacity: 0.75, fontSize: 13 }}>
+          {runs.length} / {maxImages}
+        </div>
+      </div>
+
+      {runs.length === 0 ? (
+        <p style={{ opacity: 0.75, marginTop: 10 }}>
+          No fits captured yet. Upload multiple images to build your identity.
+        </p>
+      ) : (
+        <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+          {runs.map((r) => {
+            const isActive = r.id === activeId;
+            const isOpen = r.id === openId;
+
+            const cardBorder = isActive
+              ? "1px solid rgba(97,218,251,0.65)"
+              : "1px solid rgba(255,255,255,0.12)";
+            const cardBg = isActive ? "rgba(97,218,251,0.08)" : "rgba(0,0,0,0.10)";
+
+            return (
+              <div
+                key={r.id}
+                className={isActive ? "card-active" : "card-hover"}
+                style={{
+                  borderRadius: 14,
+                  border: cardBorder,
+                  background: cardBg,
+                  overflow: "hidden",
+                }}
+              >
+                {/* COLLAPSED HEADER (ONLY WHEN CLOSED) */}
+                {!isOpen && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(r.id);
+                      setOpenId(r.id);
+                    }}
+                    style={{
+                      all: "unset",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: 10,
+                    }}
+                    title="Expand"
+                  >
+                    <img
+                      src={r.imagePreviewUrl}
+                      alt={r.imageFile.name}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        flex: "0 0 auto",
+                      }}
+                    />
+
+                    <div style={{ minWidth: 0, flex: "1 1 auto" }}>
+                      <div style={{ fontWeight: 800, fontSize: 13 }}>
+                        {truncate(r.imageFile.name, 26)}
+                      </div>
+                      <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>
+                        {formatTime(r.createdAt)}
+                        <span style={{ marginLeft: 8, opacity: r.selected ? 0.9 : 0.6 }}>
+                          • {r.selected ? "Selected" : "Unselected"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ opacity: 0.75, fontSize: 12, flex: "0 0 auto" }}>Show</div>
+                  </button>
+                )}
+
+                {/* EXPANDED VIEW (MATCHES YOUR ORIGINAL CARD) */}
+                {isOpen && (
+                  <>
+                    {/* top row to collapse */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        padding: 10,
+                        paddingBottom: 0,
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: 13, opacity: 0.9 }}>
+                        {truncate(r.imageFile.name, 26)}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(null)}
+                        style={{
+                          all: "unset",
+                          cursor: "pointer",
+                          opacity: 0.75,
+                          fontSize: 12,
+                        }}
+                        title="Collapse"
+                      >
+                        Hide
+                      </button>
+                    </div>
+
+                    {/* Clickable preview (same as before) */}
+                    <button
+                      onClick={() => onSelect(r.id)}
+                      style={{
+                        all: "unset",
+                        cursor: "pointer",
+                        display: "block",
+                        width: "100%",
+                      }}
+                      title="Select this fit"
+                    >
+                      <div
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          overflow: "hidden",
+                          marginTop: 10,
+                        }}
+                      >
+                        <img
+                          src={r.imagePreviewUrl}
+                          alt={r.imageFile.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ padding: 10 }}>
+                        <div style={{ opacity: 0.75, fontSize: 12, marginTop: 4 }}>
+                          {formatTime(r.createdAt)}
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Actions (same as before) */}
+                    <div style={{ display: "flex", gap: 8, padding: 10, paddingTop: 0 }}>
+                      <button
+                        onClick={() => onToggle(r.id)}
+                        style={{
+                          width: "100%",
+                          opacity: 0.9,
+                          borderRadius: 10,
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          background: "rgba(255,255,255,0.06)",
+                          padding: "8px 10px",
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                        title="Toggle Select"
+                      >
+                        {r.selected ? "Unselect" : "Select"}
+                      </button>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8, padding: 10, paddingTop: 0 }}>
+                      <button
+                        onClick={() => onRemove(r.id)}
+                        style={{
+                          width: "100%",
+                          opacity: 0.9,
+                          borderRadius: 10,
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          background: "rgba(255,255,255,0.06)",
+                          padding: "8px 10px",
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                        title="Remove this fit"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
 }

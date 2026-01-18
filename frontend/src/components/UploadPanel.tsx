@@ -1,5 +1,5 @@
 import type { FitRun } from "../types";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import FilterPanel from "./FilterPanel";
 
 function formatTime(ts: number) {
@@ -20,6 +20,7 @@ export default function UploadPanel({
   setMinPrice,
   setMaxPrice,
   setMinStarRating,
+  children,
 }: {
   activeRun: FitRun | null;
   runsCount: number;
@@ -33,8 +34,10 @@ export default function UploadPanel({
   setMinPrice: (num: number) => void;
   setMaxPrice: (num: number) => void;
   setMinStarRating: (num: number) => void;
+  children?: ReactNode;
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+
   return (
     <section
       className="vault-panel fade-up"
@@ -46,8 +49,7 @@ export default function UploadPanel({
     >
       <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2>
       <p style={{ margin: "6px 0 12px", opacity: 0.75 }}>
-        Upload multiple fits. We mint one combined Fashion Identity from the
-        full set.
+        Upload multiple fits. We mint one combined Fashion Identity from the full set.
       </p>
 
       <div
@@ -86,10 +88,7 @@ export default function UploadPanel({
           />
         </label>
 
-        <button
-          onClick={onAnalyzeAll}
-          disabled={runsCount === 0 || loadingAnalyze}
-        >
+        <button onClick={onAnalyzeAll} disabled={runsCount === 0 || loadingAnalyze}>
           {loadingAnalyze ? "Minting..." : `Mint Style Identity (${runsCount})`}
         </button>
 
@@ -103,19 +102,14 @@ export default function UploadPanel({
         </button>
 
         {activeRun && (
-          <button
-            onClick={onClearSelection}
-            style={{ opacity: 0.9 }}
-            title="Deselect current run"
-          >
+          <button onClick={onClearSelection} style={{ opacity: 0.9 }} title="Deselect current run">
             Clear selection
           </button>
         )}
+
         <button
           className="btn-primary"
-          onClick={() => {
-            setFiltersOpen(!filtersOpen);
-          }}
+          onClick={() => setFiltersOpen((v) => !v)}
           style={{ opacity: 0.9 }}
         >
           Toggle Filters
@@ -126,49 +120,23 @@ export default function UploadPanel({
       <div
         style={{
           overflow: "hidden",
-          transition: "max-height 320ms ease, opacity 200ms ease",
+          transition: "max-height 320ms ease, opacity 200ms ease, margin-top 200ms ease",
           maxHeight: filtersOpen ? 500 : 0,
           opacity: filtersOpen ? 1 : 0,
           marginTop: filtersOpen ? 14 : 0,
         }}
       >
         <FilterPanel
-          setMinPrice={(num) => {
-            setMinPrice(num);
-          }}
-          setMaxPrice={(num) => {
-            setMaxPrice(num);
-          }}
+          setMinPrice={setMinPrice}
+          setMaxPrice={setMaxPrice}
           setMinStarRating={setMinStarRating}
         />
       </div>
 
-      {activeRun && (
-        <div
-          style={{ marginTop: 14, display: "flex", gap: 14, flexWrap: "wrap" }}
-        >
-          <img
-            src={activeRun.imagePreviewUrl}
-            alt="Uploaded preview"
-            style={{
-              width: 160,
-              height: 160,
-              objectFit: "cover",
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          />
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ opacity: 0.8 }}>
-              Selected: <b>{activeRun.imageFile.name}</b> •{" "}
-              {formatTime(activeRun.createdAt)}
-            </div>
-            <div style={{ opacity: 0.7, fontSize: 13 }}>
-              Size: {(activeRun.imageFile.size / (1024 * 1024)).toFixed(2)}MB
-            </div>
-          </div>
-        </div>
-      )}
+    
+
+      {/* ✅ Fits Uploaded strip goes HERE now (same component, same sizing) */}
+      {children ? <div style={{ marginTop: 14 }}>{children}</div> : null}
     </section>
   );
 }
