@@ -1,6 +1,10 @@
+// FilterPanel.tsx
 import { useState } from "react";
-import Slider, { Range } from "rc-slider";
+import { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
+
+type SortMode = "featured" | "price-asc" | "price-desc";
+
 export default function FilterPanel({
   setMinPrice,
   setMaxPrice,
@@ -8,100 +12,86 @@ export default function FilterPanel({
 }: {
   setMinPrice: (num: number) => void;
   setMaxPrice: (num: number) => void;
-  filterRecommendations: (filter: string) => void;
+  filterRecommendations: (filter: SortMode) => void;
 }) {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
-
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState<SortMode>("featured");
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          gap: 40,
-          padding: 20,
-          alignItems: "stretch", // make both columns same height
-        }}
-      >
-        {/* LEFT COLUMN — Sliders */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            maxWidth: 300,
-          }}
-        >
-          {/* Price Range Slider */}
-          <div style={{ marginBottom: 40 }}>
-            <label>
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
-            </label>
-            <Range
-              min={0}
-              max={500}
-              step={10}
-              value={priceRange}
-              onChange={(value) => {
-                setPriceRange(value as [number, number]);
-                setMinPrice(value[0]);
-                setMaxPrice(value[1]);
-              }}
-              trackStyle={[{ backgroundColor: "#007bff" }]}
-              handleStyle={[
-                { borderColor: "#007bff" },
-                { borderColor: "#007bff" },
-              ]}
-              railStyle={{ backgroundColor: "#ccc" }}
-            />
-          </div>
-
-          
-        </div>
-
-        {/* RIGHT COLUMN — Dropdown */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end", // push dropdown to bottom
-            maxWidth: 300,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
+    <div
+      style={{
+        padding: 16,
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.10)",
+        background: "rgba(255,255,255,0.04)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
+      {/* Price Range Section */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <label style={{ fontWeight: 800, fontSize: 12, opacity: 0.85 }}>
+          Price Range: ${priceRange[0]} - ${priceRange[1]}
+        </label>
+        <div style={{ width: "100%" }}>
+          <Range
+            min={0}
+            max={500}
+            step={10}
+            value={priceRange}
+            onChange={(value) => {
+              const v = value as [number, number];
+              setPriceRange(v);
+              setMinPrice(v[0]);
+              setMaxPrice(v[1]);
             }}
-          >
-            <label htmlFor="filter">Sort by:</label>
-            <select
-              id="filter"
-              value={filter}
-              onChange={(e) => {
-                setFilter(e.target.value);
-                filterRecommendations(e.target.value);
-              }}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 4,
-                border: "1px solid #ccc",
-                fontSize: 14,
-                outline: "none",
-                backgroundColor: "#f8f9fa", // matches your container
-                color: "#333", // text color
-              }}
-            >
-              <option value="featured">Featured</option>
-              <option value="price-asc">Lowest to Highest Price</option>
-              <option value="price-desc">Highest to Lowest Price</option>
-            </select>
-          </div>
+            trackStyle={[{ backgroundColor: "rgba(97,218,251,0.85)" }]}
+            handleStyle={[
+              { borderColor: "rgba(97,218,251,0.95)", backgroundColor: "rgba(15,17,21,0.9)" },
+              { borderColor: "rgba(97,218,251,0.95)", backgroundColor: "rgba(15,17,21,0.9)" },
+            ]}
+            railStyle={{ backgroundColor: "rgba(255,255,255,0.18)" }}
+          />
         </div>
+      </div>
+
+      {/* Sort Dropdown Section */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <label htmlFor="filter" style={{ fontWeight: 800, fontSize: 12, opacity: 0.85 }}>
+          Sort by:
+        </label>
+        <select
+          id="filter"
+          value={filter}
+          onChange={(e) => {
+            const v = e.target.value as SortMode;
+            setFilter(v);
+            filterRecommendations(v);
+          }}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.14)",
+            background: "rgba(255,255,255,0.06)",
+            color: "rgba(255,255,255,0.92)",
+            fontSize: 13,
+            fontWeight: 800,
+            outline: "none",
+            cursor: "pointer",
+            width: "100%",
+          }}
+        >
+          <option value="featured" style={{ color: "#111" }}>
+            Featured
+          </option>
+          <option value="price-asc" style={{ color: "#111" }}>
+            Lowest to Highest Price
+          </option>
+          <option value="price-desc" style={{ color: "#111" }}>
+            Highest to Lowest Price
+          </option>
+        </select>
       </div>
     </div>
   );

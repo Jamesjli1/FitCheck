@@ -1,51 +1,11 @@
+// RecommendationsSection.tsx
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Recommendation } from "../types";
 import TopItemCategoryPanel from "./TopItemCategoryPanel";
 import FilterPanel from "./FilterPanel";
 
-function roundToHalf(n: number) {
-  return Math.round(n * 2) / 2;
-}
-
-function StarRating({ rating, count }: { rating?: number; count?: number }) {
-  const r = rating == null ? 0 : roundToHalf(rating);
-  const full = Math.floor(r);
-  const half = r - full === 0.5;
-  const empty = 5 - full - (half ? 1 : 0);
-
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ display: "flex", gap: 2, fontSize: 14, lineHeight: 1 }}>
-        {Array.from({ length: full }).map((_, i) => (
-          <span key={`f-${i}`}>★</span>
-        ))}
-
-        {half && (
-          <span style={{ position: "relative", width: 14, display: "inline-block" }} title={`${r}`}>
-            <span style={{ opacity: 0.28 }}>★</span>
-            <span style={{ position: "absolute", top: 0, left: 0, width: "50%", overflow: "hidden" }}>
-              ★
-            </span>
-          </span>
-        )}
-
-        {Array.from({ length: empty }).map((_, i) => (
-          <span key={`e-${i}`} style={{ opacity: 0.28 }}>
-            ★
-          </span>
-        ))}
-      </div>
-
-      <div style={{ fontSize: 12, opacity: 0.75, whiteSpace: "nowrap" }}>
-        <span style={{ fontWeight: 900, opacity: 0.95 }}>
-          {r.toFixed(r % 1 === 0 ? 0 : 1)}
-        </span>
-        {count != null ? <span style={{ opacity: 0.75 }}> ({count})</span> : null}
-      </div>
-    </div>
-  );
-}
+type SortMode = "featured" | "price-asc" | "price-desc";
 
 function Pill({ text }: { text: string }) {
   return (
@@ -69,6 +29,14 @@ function Pill({ text }: { text: string }) {
 
 function clampText(s: string, n: number) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+function parsePrice(price?: string | number) {
+  if (typeof price === "number") return price;
+  if (!price) return 0;
+  const cleaned = price.replace(/[^0-9.]/g, "");
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function ProductModal({
@@ -113,7 +81,6 @@ function ProductModal({
         backdropFilter: "blur(6px)",
       }}
     >
-      {/* ✅ hard-center on true viewport */}
       <div
         className="vault-panel"
         style={{
@@ -123,21 +90,14 @@ function ProductModal({
           transform: "translate(-50%, -50%)",
           width: "min(900px, 72vw)",
           maxWidth: "94vw",
-
-          // ✅ FIX: autosize instead of forcing tall height
           height: "auto",
           maxHeight: "88vh",
-
-          // ✅ FIX: keep scroll inside the modal if content is too tall
           overflow: "hidden",
-
           borderRadius: 18,
           border: "1px solid rgba(255,255,255,0.14)",
           background:
             "radial-gradient(1200px 600px at 15% 0%, rgba(97,218,251,0.12), transparent 60%), rgba(10,10,14,0.96)",
           boxShadow: "0 30px 120px rgba(0,0,0,0.55)",
-
-          // ✅ make modal a column so header stays and body scrolls
           display: "flex",
           flexDirection: "column",
         }}
@@ -180,7 +140,7 @@ function ProductModal({
           </button>
         </div>
 
-        {/* ✅ body scroll area (only if needed) */}
+        {/* body */}
         <div
           style={{
             padding: 14,
@@ -213,7 +173,7 @@ function ProductModal({
                 {inStock != null ? <Pill text={inStock ? "In stock" : "Out of stock"} /> : null}
               </div>
 
-              <StarRating rating={(product as any).rating} count={(product as any).ratingCount} />
+              {/* ✅ stars removed */}
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {vendor ? <Pill text={vendor} /> : null}
@@ -222,9 +182,7 @@ function ProductModal({
             </div>
           </div>
 
-          {/* ✅ right column becomes flex so description can expand */}
           <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* ✅ Description expands to remove “dead bottom”, and scrolls if huge */}
             <div
               style={{
                 padding: 12,
@@ -290,9 +248,7 @@ function ProductModal({
                 background: "rgba(97,218,251,0.08)",
               }}
             >
-              <div style={{ fontSize: 12, opacity: 0.8, fontWeight: 900 }}>
-                Why it matches your identity
-              </div>
+              <div style={{ fontSize: 12, opacity: 0.8, fontWeight: 900 }}>Why it matches your identity</div>
               <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
                 {(product.reasons ?? []).slice(0, 6).map((r) => (
                   <div key={r} style={{ opacity: 0.92 }}>
@@ -348,32 +304,43 @@ function ProductModal({
 export default function RecommendationsSection({
   recommendations,
   filter,
+  minPrice,
+  maxPrice,
   setMinPrice,
   setMaxPrice,
-  filterRecommendation
+  filterRecommendation,
 }: {
   recommendations?: Record<string, Recommendation[]>;
-  filter: string;
-  setMinPrice: (int: number) => void;
-  setMaxPrice: (int: number) => void;
-  filterRecommendation: (filter: string) => void;
+  filter: SortMode;
+  minPrice: number;
+  maxPrice: number;
+  setMinPrice: (n: number) => void;
+  setMaxPrice: (n: number) => void;
+  filterRecommendation: (filter: SortMode) => void;
 }) {
-  
-
   const [filterPage, toggleFilterPage] = useState(false);
-  const [currentTab, setTab] = useState("tops")
-
-  // @ts-ignore
-  // const [currItems, setCurrItems] = useState(items)
+  const [currentTab, setTab] = useState("tops");
   const [selected, setSelected] = useState<Recommendation | null>(null);
-  const [items, setItems] = useState<Recommendation[]>([]);
 
-  useEffect(() => {
-    setItems((recommendations != null)? recommendations[currentTab]: [])
-  }, [recommendations, currentTab])
+  const baseItems = useMemo(() => {
+    return recommendations?.[currentTab] ?? [];
+  }, [recommendations, currentTab]);
 
+  // ✅ filter + sort without mutating base array (prevents weird duplicates/order bugs)
+  const items = useMemo(() => {
+    let out = baseItems.filter((p) => {
+      const price = parsePrice(p.price);
+      return price >= minPrice && price <= maxPrice;
+    });
 
+    if (filter === "price-asc") {
+      out = [...out].sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+    } else if (filter === "price-desc") {
+      out = [...out].sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+    }
 
+    return out;
+  }, [baseItems, minPrice, maxPrice, filter]);
 
   return (
     <section
@@ -398,12 +365,24 @@ export default function RecommendationsSection({
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Pill text="Shopify picks" />
-          <button onClick={() => {
-            toggleFilterPage(!filterPage)
-          }}>Toggle Button</button>
+          <Pill text="10 results" />
+          <button
+            onClick={() => toggleFilterPage((v) => !v)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "rgba(255,255,255,0.06)",
+              cursor: "pointer",
+              fontWeight: 800,
+              color: "inherit",
+            }}
+          >
+            Toggle Filters
+          </button>
         </div>
       </div>
-      {/* TODO HERE */}
+
       <div
         style={{
           overflow: "hidden",
@@ -431,98 +410,93 @@ export default function RecommendationsSection({
             background: "rgba(0,0,0,0.10)",
           }}
         >
-          <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>No matches yet</div>
+          <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>No matches in this filter</div>
           <p style={{ opacity: 0.78, marginTop: 8 }}>
-            Mint your identity, then hit <b>Generate Matches</b>.
+            Try widening the price range or changing sort.
           </p>
         </div>
       ) : (
         <div>
-          <TopItemCategoryPanel setTab={setTab}></TopItemCategoryPanel>
+          <TopItemCategoryPanel setTab={setTab} />
+
           <div
-          style={{
-            marginTop: 12,
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 12,
-          }}
-        >
-          {items.map((p) => (
-            <div
-              key={p.title}
-              role="button"
-              tabIndex={0}
-              onClick={() => setSelected(p)}
-              onKeyDown={(e) => e.key === "Enter" && setSelected(p)}
-              style={{
-                cursor: "pointer",
-                borderRadius: 16,
-                border: "1px solid rgba(255,255,255,0.12)",
-                background:
-                  "radial-gradient(1200px 400px at 20% 0%, rgba(97,218,251,0.10), transparent 60%), rgba(0,0,0,0.10)",
-                overflow: "hidden",
-                minWidth: 0,
-                boxShadow: "0 14px 40px rgba(0,0,0,0.28)",
-              }}
-            >
-              <div style={{ width: "100%", aspectRatio: "16 / 11", overflow: "hidden" }}>
-                <img
-                  src={p.imageUrl}
-                  alt={p.title}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transform: "scale(1.02)",
-                    filter: "saturate(1.05) contrast(1.02)",
-                  }}
-                />
-              </div>
-
-              <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                  <div style={{ fontWeight: 900, fontSize: 13, lineHeight: 1.2, minWidth: 0 }}>
-                    {clampText(p.title, 44)}
-                  </div>
-
-                  <div style={{ fontWeight: 900, fontSize: 13, opacity: 0.95, whiteSpace: "nowrap" }}>
-                    {p.price ?? ""}
-                  </div>
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 12,
+            }}
+          >
+            {items.map((p) => (
+              <div
+                key={p.id ?? p.productUrl ?? `${p.title}-${p.imageUrl}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelected(p)}
+                onKeyDown={(e) => e.key === "Enter" && setSelected(p)}
+                style={{
+                  cursor: "pointer",
+                  borderRadius: 16,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background:
+                    "radial-gradient(1200px 400px at 20% 0%, rgba(97,218,251,0.10), transparent 60%), rgba(0,0,0,0.10)",
+                  overflow: "hidden",
+                  minWidth: 0,
+                  boxShadow: "0 14px 40px rgba(0,0,0,0.28)",
+                }}
+              >
+                <div style={{ width: "100%", aspectRatio: "16 / 11", overflow: "hidden" }}>
+                  <img
+                    src={p.imageUrl}
+                    alt={p.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transform: "scale(1.02)",
+                      filter: "saturate(1.05) contrast(1.02)",
+                    }}
+                  />
                 </div>
 
-                <StarRating rating={(p as any).rating} count={(p as any).ratingCount} />
+                <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontWeight: 900, fontSize: 13, lineHeight: 1.2, minWidth: 0 }}>
+                      {clampText(p.title, 44)}
+                    </div>
 
-                {p.reasons?.length ? (
-                  <div style={{ fontSize: 12, opacity: 0.78, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {p.reasons.slice(0, 2).map((r) => (
-                      <span
-                        key={r}
-                        style={{
-                          padding: "5px 8px",
-                          borderRadius: 999,
-                          border: "1px solid rgba(255,255,255,0.10)",
-                          background: "rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        {r}
-                      </span>
-                    ))}
+                    <div style={{ fontWeight: 900, fontSize: 13, opacity: 0.95, whiteSpace: "nowrap" }}>
+                      {p.price ?? ""}
+                    </div>
                   </div>
-                ) : null}
+
+                  {/* ✅ stars removed */}
+
+                  {p.reasons?.length ? (
+                    <div style={{ fontSize: 12, opacity: 0.78, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {p.reasons.slice(0, 2).map((r) => (
+                        <span
+                          key={r}
+                          style={{
+                            padding: "5px 8px",
+                            borderRadius: 999,
+                            border: "1px solid rgba(255,255,255,0.10)",
+                            background: "rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        </div>
-        
       )}
 
-      {selected
-        ? createPortal(
-            <ProductModal product={selected} onClose={() => setSelected(null)} />,
-            document.body
-          )
-        : null}
+      {selected ? createPortal(<ProductModal product={selected} onClose={() => setSelected(null)} />, document.body) : null}
     </section>
   );
 }
