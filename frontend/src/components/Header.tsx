@@ -17,15 +17,16 @@ export default function Header({
     >
       <div style={{ textAlign: "left" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
+          <img
+            src="/fc.png"
+            alt="FitCheck logo"
             style={{
               width: 36,
               height: 36,
               borderRadius: 12,
-              background: "linear-gradient(135deg, #000000, #ffffff)",
               boxShadow: "0 10px 30px rgba(100,108,255,0.25)",
+              objectFit: "cover",
             }}
-            aria-hidden="true"
           />
           <h1 style={{ margin: 0, fontSize: 34 }}>FitCheck</h1>
         </div>
