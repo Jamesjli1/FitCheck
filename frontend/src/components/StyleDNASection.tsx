@@ -215,11 +215,11 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
       >
         <div style={{ minWidth: 0 }}>
           <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
-            Your fashion identity is: 
+            Your fashion identity is 
           </div>
           <h1 style={{ margin: 0, fontSize: 24 }}>
 
-            {identity ? identity?.emoji + "  The " + identity?.personality  : "To be determined ..."}
+            {identity ? identity?.emoji + "  The " + identity?.personality  : "to be determined ..."}
           </h1>
           
         </div>
@@ -233,7 +233,7 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
       ) : (
         <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
           <div className="vault-card" style={{ padding: 14, borderRadius: 16, minWidth: 0 }}>
-            <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>Summary</div>
+            <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>SUMMARY</div>
             <div
               style={{
                 marginTop: 8,
@@ -254,14 +254,14 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
           </div>
 
           <StyleCard
-            title="CURRENT IDENTITY"
+            title="CURRENT STYLE"
             subtitle="What your outfits currently signal most often."
             accent="current"
             desc={identity.current_style}
           />
 
           <StyleCard
-            title="IMPROVED IDENTITY"
+            title="IMPROVED STYLE"
             subtitle="Upgraded direction: clearer silhouette, better materials, cleaner palette."
             accent="improved"
             desc={identity.improved_style}
