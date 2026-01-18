@@ -30,7 +30,7 @@ export default function Header({
           <h1 style={{ margin: 0, fontSize: 34 }}>FitCheck</h1>
         </div>
         <p style={{ margin: "8px 0 0", opacity: 0.8 }}>
-          Upload a fit → get Style DNA + Shopify picks.
+          Style advisor powered by <u><a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer">Google Gemini</a></u> and <u><a href="https://shopify.com/" target="_blank" rel="noopener noreferrer">Shopify</a></u>.
         </p>
       </div>
 

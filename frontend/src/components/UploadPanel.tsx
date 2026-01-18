@@ -17,10 +17,6 @@ export default function UploadPanel({
   onAnalyzeAll,
   onRecommendAll,
   onClearSelection,
-  setMinPrice,
-  setMaxPrice,
-  setMinStarRating,
-  filterRecommendations,
   children,
 }: {
   activeRun: FitRun | null;
@@ -32,13 +28,8 @@ export default function UploadPanel({
   onAnalyzeAll: () => void;
   onRecommendAll: () => void;
   onClearSelection: () => void;
-  setMinPrice: (num: number) => void;
-  setMaxPrice: (num: number) => void;
-  setMinStarRating: (num: number) => void;
-  filterRecommendations: (filter: string) => void;
   children?: ReactNode;
 }) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
     <section
@@ -49,7 +40,7 @@ export default function UploadPanel({
         borderRadius: 16,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2>
+      {/* <h2 style={{ margin: 0, fontSize: 18 }}>Capture</h2> */}
       <p style={{ margin: "6px 0 12px", opacity: 0.75 }}>
         Upload multiple fits. We mint one combined Fashion Identity from the full set.
       </p>
@@ -76,7 +67,7 @@ export default function UploadPanel({
             fontWeight: 700,
           }}
         >
-          Capture fits
+          Upload Fits
           <input
             type="file"
             multiple
@@ -108,33 +99,9 @@ export default function UploadPanel({
             Clear selection
           </button>
         )}
-
-        <button
-          className="btn-primary"
-          onClick={() => setFiltersOpen((v) => !v)}
-          style={{ opacity: 0.9 }}
-        >
-          Toggle Filters
-        </button>
       </div>
 
-      {/* Filter Panel */}
-      <div
-        style={{
-          overflow: "hidden",
-          transition: "max-height 320ms ease, opacity 200ms ease, margin-top 200ms ease",
-          maxHeight: filtersOpen ? 500 : 0,
-          opacity: filtersOpen ? 1 : 0,
-          marginTop: filtersOpen ? 14 : 0,
-        }}
-      >
-        <FilterPanel
-          setMinPrice={setMinPrice}
-          setMaxPrice={setMaxPrice}
-          setMinStarRating={setMinStarRating}
-          filterRecommendations={filterRecommendations}
-        />
-      </div>
+    
 
     
 

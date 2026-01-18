@@ -4,16 +4,13 @@ import "rc-slider/assets/index.css";
 export default function FilterPanel({
   setMinPrice,
   setMaxPrice,
-  setMinStarRating,
   filterRecommendations,
 }: {
   setMinPrice: (num: number) => void;
   setMaxPrice: (num: number) => void;
-  setMinStarRating: (num: number) => void;
   filterRecommendations: (filter: string) => void;
 }) {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
-  const [minStars, setMinStars] = useState(3);
 
   const [filter, setFilter] = useState("");
 

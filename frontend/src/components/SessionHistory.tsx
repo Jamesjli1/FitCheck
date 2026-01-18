@@ -48,10 +48,7 @@ export default function SessionHistory({
         }}
       >
         <div>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded</h2>
-          <div style={{ opacity: 0.75, fontSize: 13, marginTop: 6 }}>
-            {runs.length} / {maxImages}
-          </div>
+          <h2 style={{ margin: 0, fontSize: 18 }}>Fits Uploaded ({runs.length} / {maxImages})</h2>
         </div>
 
         <button
