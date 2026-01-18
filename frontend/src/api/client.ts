@@ -16,7 +16,7 @@ import type { IdentityResult, Recommendation, StyleDesc } from "../types";
  * - true  → use local mock data (frontend works without backend)
  * - false → call real FastAPI backend
  */
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 /**
  * Base URL for backend API.
