@@ -35,11 +35,6 @@ For UofTHacks 13
     - Highest → Lowest price
   - Live filtering without page reloads
 
-- **Product Detail Modal**
-  - Full product preview
-  - Description, sizes, tags, vendor, stock status
-  - Direct link to Shopify product
-
 ---
 
 ## Tech Stack
@@ -58,6 +53,19 @@ For UofTHacks 13
 
 ### Commerce / Product Data
 - **Shopify UCP API** (Shopify product catalog retrieval)
+
+---
+
+## Limitations
+
+- Product ratings and inventory depend on available Shopify metadata
+- Filters and sorting currently run client-side for speed
+- No persistent user accounts or saved sessions yet
+
+## Next Steps
+
+- Add user profiles with saved Style DNA
+- Deeper Shopify integration (real-time inventory, merchant boosts)
 
 ---
 
