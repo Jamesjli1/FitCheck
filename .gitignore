@@ -15,9 +15,43 @@ venv/
 .env
 **/.env
 
+# ======================
+# Node / React / Vite
+# ======================
 node_modules/
 **/node_modules/
 
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Vite / React caches
+.vite/
+.eslintcache
+.npm/
+.pnpm/
+.yarn/
+.yarn-cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# OS / Editor
+# ======================
 .DS_Store
+Thumbs.db
+
 .vscode/
 .idea/
+
+# ======================
+# Misc
+# ======================
+*.log
+.cache/
