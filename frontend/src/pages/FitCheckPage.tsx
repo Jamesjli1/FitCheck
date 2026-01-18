@@ -42,6 +42,13 @@ export default function FitCheckPage() {
   const [maxPrice, setMaxPrice] = useState(500);
   const [minStarRating, setMinStarRating] = useState(3);
 
+  const [filter, setFilter] = useState("");
+
+  const filterRecommendations = (filter: string) => {
+    setFilter(filter);
+    console.log(filter);
+  }
+
   function validateFile(file: File): string | null {
     if (!ALLOWED_TYPES.has(file.type))
       return "Please upload a JPG, PNG, or WebP image.";
@@ -192,12 +199,14 @@ export default function FitCheckPage() {
         setMinPrice={(num) => {setMinPrice(num)}}
         setMaxPrice={(num) => {setMaxPrice(num)}}
         setMinStarRating={setMinStarRating}
+        filterRecommendations={filterRecommendations}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <StyleDNASection identity={identity} />
         <RecommendationsSection
           recommendations={recommendations ?? undefined}
+          filter={filter}
         />
       </div>
 
