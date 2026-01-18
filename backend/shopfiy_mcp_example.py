@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CLIENT_ID = os.getenv("SHOPIFY_CATALOG_CLIENT_ID")
-CLIENT_SECRET = os.getenv("SHOPIFY_CATALOG_CLIENT_SECRET")
-SAVED_CATALOG = os.getenv("SHOPIFY_SAVED_CATALOG_ID")
+CLIENT_ID = os.getenv("SHOPIFY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("SHOPIFY_CLIENT_SECRET")
+SAVED_CATALOG = os.getenv("SHOPIFY_SAVED_CATALOG")
 
 if not CLIENT_ID or not CLIENT_SECRET:
     raise RuntimeError("Missing SHOPIFY_CATALOG_CLIENT_ID / SHOPIFY_CATALOG_CLIENT_SECRET in .env")
@@ -62,6 +62,7 @@ def call_mcp(token: str):
         },
         timeout=30,
     )
+    
     resp.raise_for_status()
     return resp.json()
 

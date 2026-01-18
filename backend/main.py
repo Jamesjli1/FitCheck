@@ -147,7 +147,14 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
             raise HTTPException(status_code=502, detail="Model returned empty text")
         
         json_answer_2 = extract_json(answer)
-        
+
+        # Capitalization rules
+        json_answer_1["current_style"]["name"] = json_answer_1["current_style"]["name"].title()
+        json_answer_1["improved_style"]["name"] = json_answer_1["improved_style"]["name"].title()
+        # Force capitalize bullet point start
+        json_answer_1["current_summary"] = list([i.capitalize() for i in json_answer_1["current_summary"]])
+        json_answer_2["personality"] = json_answer_2["personality"].title()
+
         return {"answer": {**json_answer_1, **json_answer_2}}
     except HTTPException:
         raise
@@ -178,6 +185,7 @@ async def search_terms(req: SearchTermsRequest):
         
         json_answer = extract_json(answer, '[', ']')
         
+        
         return {"answer": json_answer}
     except HTTPException:
         raise
@@ -199,6 +207,7 @@ class SearchShopifyResponse(BaseModel):
 # for a maximum of `limit` items
 @app.post("/search-shopify", response_model=SearchShopifyResponse)
 def search_shopify(req: SearchShopifyRequest):
+    print("search_shopify called")
     response = requests.post(
         url="https://api.shopify.com/auth/access_token",
         headers={
@@ -249,6 +258,7 @@ class RecommendationsResponse(BaseModel):
 
 @app.post("/recommendations", response_model=RecommendationsResponse)
 def get_recommendations(req: RecommendationsRequest):
+    print("get_recommendations called")
     """
     Generate shirt recommendations from style profile using Shopify MCP.
     
