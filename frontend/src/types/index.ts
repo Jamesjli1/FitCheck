@@ -21,11 +21,24 @@ export type IdentityResult = {
 };
 
 export type Recommendation = {
+  id?: string; // optional stable id from Shopify later
   title: string;
   price?: string;
+
   imageUrl?: string;
-  productUrl?: string;
-  reasons: string[];
+  productUrl?: string; // external link (Shopify product page)
+
+  rating?: number;      // e.g. 4.2
+  ratingCount?: number; // e.g. 128
+
+  description?: string; // product description / blurb
+  vendor?: string;      // brand / merchant
+  sizes?: string[];     // ["XS","S","M"...]
+  colors?: string[];    // ["Charcoal","Off-white"...]
+  tags?: string[];      // ["Overshirt","Minimal","Streetwear"...]
+  inStock?: boolean;
+
+  reasons: string[]; // why it matches identity
 };
 
 // FitRun is just for the session ledger (thumbnails + timestamps).
