@@ -176,15 +176,7 @@ export default function FitCheckPage() {
         filterRecommendations={filterRecommendations}
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <StyleDNASection identity={identity} />
-        <RecommendationsSection
-          recommendations={recommendations ?? undefined}
-          filter={filter}
-        />
-      >
-        {/* ✅ same fits strip, now under the commands */}
-        <SessionHistory
+      <SessionHistory
           runs={runs}
           activeId={activeId}
           maxImages={MAX_IMAGES_PER_SESSION}
@@ -192,14 +184,18 @@ export default function FitCheckPage() {
           onRemove={handleRemoveRun}
           onToggle={toggleSelect}
         />
-      </UploadPanel>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <StyleDNASection identity={identity} />
-        <RecommendationsSection recommendations={recommendations ?? undefined} />
-      </div>
+        <RecommendationsSection
+          recommendations={recommendations ?? undefined}
+          filter={filter}
+        />
+        {/* ✅ same fits strip, now under the commands */}
+        
 
       {/* ❌ removed SessionHistory from bottom */}
+    </div>
     </div>
   );
 }
