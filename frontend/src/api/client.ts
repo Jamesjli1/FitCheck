@@ -16,7 +16,7 @@ import type { IdentityResult, Recommendation, StyleDesc } from "../types";
  * - true  → use local mock data (frontend works without backend)
  * - false → call real FastAPI backend
  */
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 /**
  * Base URL for backend API.
@@ -63,13 +63,35 @@ export async function analyzeBatch(files: File[]): Promise<IdentityResult> {
 }
 
 /**
- * RECOMMENDATIONS (STILL MOCKED)
- * -----------------------------
- * Backend search / Shopify not implemented yet.
- * Keeping this mocked even when USE_MOCK = false.
+ * RECOMMENDATIONS (CONNECTED TO BACKEND)
+ * -----------------------------------------------
+ * POST /recommendations
+ * Takes the improved_style profile and returns product recommendations
  */
-export async function getRecommendations(_style: StyleDesc): Promise<Recommendation[]> {
-  return mockRecommend(_style);
+export async function getRecommendations(style: StyleDesc): Promise<Recommendation[]> {
+  if (USE_MOCK) return mockRecommend(style);
+
+  const res = await fetch(`${API_BASE}/recommendations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      style_name: style.name,
+      colors: style.colors,
+      fit: style.fit,
+      textures: style.textures,
+      accessories: style.accessories,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`recommendations failed (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+  return data.results as Recommendation[];
 }
 
 /* ---------- MOCK IMPLEMENTATIONS (Frontend-only demo mode) ---------- */
