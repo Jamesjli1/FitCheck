@@ -412,8 +412,10 @@ export default function RecommendationsSection({
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Pill text="Shopify picks" />
           <Pill text="10 results" />
+          <button></button>
         </div>
       </div>
+      {/* TODO HERE */}
 
       {!items.length ? (
         <div

@@ -180,10 +180,6 @@ export default function FitCheckPage() {
           setRecommendations(null);
           setError(null);
         }}
-        setMinPrice={setMinPrice}
-        setMaxPrice={setMaxPrice}
-        setMinStarRating={setMinStarRating}
-        filterRecommendations={filterRecommendations}
       />
 
       <SessionHistory
