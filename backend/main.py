@@ -7,7 +7,6 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import base64
-from google.genai import types
 from typing import Any, List
 import requests
 from utils import compress_image
@@ -229,3 +228,80 @@ def search_shopify(req: SearchShopifyRequest):
     json_response = extract_json(response)["offers"]
 
     return {"results": json_response}
+
+
+class RecommendationsRequest(BaseModel):
+    style_name: str
+    colors: List[str]
+    fit: str
+    textures: str
+    accessories: List[str]
+
+class RecommendationsResponse(BaseModel):
+    results: List[dict[str, Any]]
+
+@app.post("/recommendations", response_model=RecommendationsResponse)
+def get_recommendations(req: RecommendationsRequest):
+    """
+    Generate shirt recommendations from style profile using Shopify MCP.
+    
+    Takes the improved_style profile and searches for matching shirt products.
+    """
+    try:
+        # Import Shopify functions here to avoid env var issues on startup
+        from shopfiy_mcp_example import get_token, search_products_by_style, parse_shopify_offers_to_recommendations
+        
+        # Build search query focused on shirts from style profile
+        search_parts = ["shirt"]  # Always search for shirts
+        if req.style_name:
+            # Extract key style descriptors
+            style_keywords = req.style_name.split()
+            search_parts.extend(style_keywords[:2])  # Add first 2 words from style name
+        
+        if req.fit:
+            fit_keywords = req.fit.split()
+            search_parts.append(fit_keywords[0])  # Add first word from fit
+        
+        if req.textures:
+            texture_keywords = req.textures.split()
+            if len(texture_keywords) > 0:
+                search_parts.append(texture_keywords[0])  # Add first texture
+        
+        search_query = " ".join(search_parts)[:100]  # Limit query length
+        
+        # Generate context from colors
+        colors_str = ", ".join(req.colors) if req.colors else "neutral tones"
+        context = f"Shirts in {colors_str}. Style: {req.style_name}"
+        
+        # Get Shopify token and search
+        try:
+            token = get_token()
+        except Exception as e:
+            print(f"Shopify auth failed: {e}")
+            raise HTTPException(status_code=502, detail="Failed to authenticate with Shopify")
+        
+        # Search Shopify for shirts
+        try:
+            mcp_response = search_products_by_style(token, search_query, context, limit=10)
+        except Exception as e:
+            print(f"Shopify search failed: {e}")
+            raise HTTPException(status_code=502, detail="Failed to search products on Shopify")
+        
+        # Generate reasons why each shirt matches
+        reasons = [
+            f"Perfect shirt for {req.style_name}",
+            f"Complements your palette: {colors_str}",
+            f"Great for {req.fit}" if req.fit else "Great for your style"
+        ]
+        
+        # Parse offers into recommendations
+        recommendations = parse_shopify_offers_to_recommendations(mcp_response, reasons=reasons)
+        
+        return {"results": recommendations}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ERROR in /recommendations: {repr(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
