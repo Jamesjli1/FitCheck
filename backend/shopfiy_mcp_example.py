@@ -76,46 +76,132 @@ def format_mcp_response(mcp_response: dict) -> dict:
 
 
 
-def extract_minimal_products(parsed_mcp: dict):
-    results = []
+def search_products_by_style(token: str, query: str, context: str = "", limit: int = 10) -> dict:
+    """
+    Search for products using Shopify MCP with custom query.
+    
+    Args:
+        token: Shopify auth token
+        query: Search query (e.g., "charcoal wool overshirt")
+        context: Additional context
+        limit: Max results (default 10)
+    
+    Returns:
+        Formatted MCP response with offers
+    """
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "id": 1,
+        "params": {
+            "name": "search_global_products",
+            "arguments": {
+                "query": query,
+                "context": context,
+                "limit": limit,
+                "saved_catalog": SAVED_CATALOG,
+            },
+        },
+    }
 
+    resp = requests.post(
+        MCP_URL,
+        json=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return format_mcp_response(resp.json())
+
+
+def parse_shopify_offers_to_recommendations(parsed_mcp: dict, reasons: list = None) -> list:
+    """
+    Convert Shopify MCP offers to Recommendation objects matching frontend type.
+    
+    Args:
+        parsed_mcp: Parsed JSON response from Shopify MCP with "offers" key
+        reasons: List of reasons explaining the recommendations
+    
+    Returns:
+        List of recommendation dicts matching frontend Recommendation type
+    """
+    if reasons is None:
+        reasons = ["Matches your style"]
+    
+    recommendations = []
+    
     for offer in parsed_mcp.get("offers", []):
-        title = offer.get("title")
-
-        price_obj = offer.get("priceRange", {}).get("min", {})
-        price = f"{price_obj.get('amount')} {price_obj.get('currency')}"
-
-        url = offer.get("lookupUrl")
-
-        # Shop name (safe access)
+        # Basic product info
+        title = offer.get("title", "Unknown Product")
+        
+        # Get URL from first variant
+        url = None
         variants = offer.get("variants", [])
-        shop_name = None
-        if variants:
-            shop_name = variants[0].get("shop", {}).get("name")
-
+        if variants and len(variants) > 0:
+            url = variants[0].get("variantUrl")
+        
+        # Price info
+        price_obj = offer.get("priceRange", {}).get("min", {})
+        price = None
+        if price_obj.get("amount"):
+            currency = price_obj.get("currency", "USD")
+            amount = price_obj.get("amount")
+            # Amount is in cents, convert to dollars
+            amount_decimal = float(amount) / 100
+            price = f"${amount_decimal:.2f}" if currency == "USD" else f"{amount_decimal:.2f} {currency}"
+        
+        # Vendor info
+        vendor = None
+        variants = offer.get("variants", [])
+        if variants and variants[0].get("shop"):
+            vendor = variants[0]["shop"].get("name")
+        
         # Extract colors & sizes from options
         colors = []
         sizes = []
-
         for option in offer.get("options", []):
             name = option.get("name", "").lower()
             values = [v.get("value") for v in option.get("values", [])]
-
+            
             if "color" in name:
                 colors = values
             elif "size" in name:
                 sizes = values
-
-        results.append({
-            "product_name": title,
-            "shop_name": shop_name,
+        
+        # Image URL - get from media attribute
+        image_url = None
+        media = offer.get("media", [])
+        if media and len(media) > 0:
+            image_url = media[0].get("url")
+        
+        # Rating info
+        rating = offer.get("rating")
+        rating_count = offer.get("ratingCount")
+        
+        # Build recommendation object
+        recommendation = {
+            "id": offer.get("id"),
+            "title": title,
             "price": price,
-            "url": url,
-            "colors": colors,
+            "imageUrl": image_url,
+            "productUrl": url,
+            "rating": rating,
+            "ratingCount": rating_count,
+            "vendor": vendor,
             "sizes": sizes,
-        })
-
-    return results
+            "colors": colors,
+            "tags": [],
+            "description": offer.get("description"),
+            "inStock": offer.get("availableForSale", True),
+            "reasons": reasons,
+        }
+        
+        recommendations.append(recommendation)
+    
+    return recommendations
 
 
 

@@ -214,10 +214,14 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Fashion Identity</h2>
           <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
-            Combined identity across all uploaded fits.
+            Your fashion identity is: 
           </div>
+          <h1 style={{ margin: 0, fontSize: 24 }}>
+
+            {identity ? identity?.emoji + "  The " + identity?.personality  : "To be determined ..."}
+          </h1>
+          
         </div>
 
         {identity ? (
@@ -252,9 +256,15 @@ export default function StyleDNASection({ identity }: { identity?: IdentityResul
                 lineHeight: 1.35,
                 overflowWrap: "anywhere",
                 wordBreak: "break-word",
+                whiteSpace: "pre-wrap",
+                textAlign: "left",
               }}
             >
-              {identity.current_summary}
+              {identity.current_summary.map((point: string, i: number) => (
+                <div key={i} style={{ marginBottom: i < identity.current_summary.length - 1 ? 6 : 0 }}>
+                  • {point}
+                </div>
+              ))}
             </div>
           </div>
 

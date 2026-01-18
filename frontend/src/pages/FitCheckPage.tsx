@@ -18,24 +18,17 @@ function uid() {
 }
 
 export default function FitCheckPage() {
-  // Ledger of uploaded images (for thumbnails/history)
   const [runs, setRuns] = useState<FitRun[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Session-level combined outputs
   const [identity, setIdentity] = useState<IdentityResult | null>(null);
-  const [recommendations, setRecommendations] = useState<
-    Recommendation[] | null
-  >(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
 
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
   const [loadingRecommend, setLoadingRecommend] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeRun = useMemo(
-    () => runs.find((r) => r.id === activeId) ?? null,
-    [runs, activeId]
-  );
+  const activeRun = useMemo(() => runs.find((r) => r.id === activeId) ?? null, [runs, activeId]);
 
   // Filter Features
   const [minPrice, setMinPrice] = useState(0);
@@ -50,36 +43,29 @@ export default function FitCheckPage() {
   }
 
   function validateFile(file: File): string | null {
-    if (!ALLOWED_TYPES.has(file.type))
-      return "Please upload a JPG, PNG, or WebP image.";
-    if (file.size > MAX_FILE_BYTES)
-      return `File too large. Max size is ${MAX_FILE_MB}MB.`;
+    if (!ALLOWED_TYPES.has(file.type)) return "Please upload a JPG, PNG, or WebP image.";
+    if (file.size > MAX_FILE_BYTES) return `File too large. Max size is ${MAX_FILE_MB}MB.`;
     return null;
   }
 
-  // Multi-file upload: add all valid files as runs (ledger entries)
   function handlePickFiles(files: File[]) {
     setError(null);
 
     const remaining = MAX_IMAGES_PER_SESSION - runs.length;
     if (remaining <= 0) {
-      setError(
-        `Session limit reached (${MAX_IMAGES_PER_SESSION}). Remove one or refresh.`
-      );
+      setError(`Session limit reached (${MAX_IMAGES_PER_SESSION}). Remove one or refresh.`);
       return;
     }
 
     const slice = files.slice(0, remaining);
-    if (files.length > slice.length) {
-      setError(`Only ${remaining} more images allowed this session.`);
-    }
+    if (files.length > slice.length) setError(`Only ${remaining} more images allowed this session.`);
 
     const newRuns: FitRun[] = [];
     for (const file of slice) {
       const msg = validateFile(file);
       if (msg) {
         setError(msg);
-        continue; // skip invalid files but keep the rest
+        continue;
       }
 
       const id = uid();
@@ -97,28 +83,23 @@ export default function FitCheckPage() {
     if (newRuns.length) {
       setRuns((prev) => [...newRuns, ...prev]);
       setActiveId(newRuns[0].id);
-      // If user uploads new images, the combined identity is now stale
       setIdentity(null);
       setRecommendations(null);
     }
   }
 
-  // Combined analyze: sends ALL images to backend and gets ONE IdentityResult
   async function handleAnalyzeAll() {
-    // Check user has uploaded a file(s)
     if (runs.length === 0) return setError("Upload at least one image first.");
-    // Check user has selected a file(s)
-    if (runs.filter((run) => {return run.selected === true}).length === 0) return setError("Select at least one image first.")
+    if (runs.filter((run) => run.selected === true).length === 0)
+      return setError("Select at least one image first.");
+
     setError(null);
     setLoadingAnalyze(true);
 
     try {
-      // Todo: remove later
-      // const result = await analyzeBatch(runs.map((r) => r.imageFile));
-      const result = await analyzeBatch((runs.filter((run) => {return run.selected})).map(run => run.imageFile));
-
+      const result = await analyzeBatch(runs.filter((run) => run.selected).map((run) => run.imageFile));
       setIdentity(result);
-      setRecommendations(null); // reset recs after new identity
+      setRecommendations(null);
     } catch {
       setError("Analyze failed. Is the backend running?");
     } finally {
@@ -126,7 +107,6 @@ export default function FitCheckPage() {
     }
   }
 
-  // Combined recommend: uses improved_style as the target identity for product picks
   async function handleRecommendAll() {
     if (!identity) return setError("Mint your identity first (Analyze).");
     setError(null);
@@ -148,10 +128,8 @@ export default function FitCheckPage() {
       if (removing) URL.revokeObjectURL(removing.imagePreviewUrl);
 
       const next = prev.filter((r) => r.id !== id);
-
       if (activeId === id) setActiveId(next[0]?.id ?? null);
 
-      // Any change to the set of images invalidates combined identity
       setIdentity(null);
       setRecommendations(null);
 
@@ -160,11 +138,7 @@ export default function FitCheckPage() {
   }
 
   const toggleSelect = (id: string) => {
-    setRuns((prevRuns) =>
-    prevRuns.map((run) =>
-      run.id === id ? { ...run, selected: !run.selected } : run
-    )
-  );
+    setRuns((prevRuns) => prevRuns.map((run) => (run.id === id ? { ...run, selected: !run.selected } : run)));
   };
 
   return (
@@ -196,8 +170,8 @@ export default function FitCheckPage() {
         onAnalyzeAll={handleAnalyzeAll}
         onRecommendAll={handleRecommendAll}
         onClearSelection={() => setActiveId(null)}
-        setMinPrice={(num) => {setMinPrice(num)}}
-        setMaxPrice={(num) => {setMaxPrice(num)}}
+        setMinPrice={setMinPrice}
+        setMaxPrice={setMaxPrice}
         setMinStarRating={setMinStarRating}
         filterRecommendations={filterRecommendations}
       />
@@ -208,16 +182,24 @@ export default function FitCheckPage() {
           recommendations={recommendations ?? undefined}
           filter={filter}
         />
+      >
+        {/* ✅ same fits strip, now under the commands */}
+        <SessionHistory
+          runs={runs}
+          activeId={activeId}
+          maxImages={MAX_IMAGES_PER_SESSION}
+          onSelect={setActiveId}
+          onRemove={handleRemoveRun}
+          onToggle={toggleSelect}
+        />
+      </UploadPanel>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <StyleDNASection identity={identity} />
+        <RecommendationsSection recommendations={recommendations ?? undefined} />
       </div>
 
-      <SessionHistory
-        runs={runs}
-        activeId={activeId}
-        maxImages={MAX_IMAGES_PER_SESSION}
-        onSelect={setActiveId}
-        onRemove={handleRemoveRun}
-        onToggle={toggleSelect}
-      />
+      {/* ❌ removed SessionHistory from bottom */}
     </div>
   );
 }

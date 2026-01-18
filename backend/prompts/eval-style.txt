@@ -5,7 +5,7 @@ Your response should be a json in the following format:
 ```json
 {
     "current_style": the style most commonly seen among the given photos, in the format of <styledesc>,
-    "current_summary": a well-formatted paragraph summary of the above style description, including suggestions on aspects that can be improved
+    "current_summary": a list [] of ~5 concise string points of the above style description, including suggestions on aspects that can be improved. 
     "current_score": an integer from 1 to 10
     - 1: the current style is in urgent need of improvement
     - 10: impeccable style
@@ -17,12 +17,13 @@ Your response should be a json in the following format:
 where a <styledesc> is a JSON object with the following 7 fields: 
 ```json
 {
-    "name": a name for the style or styles of dress, with descriptive adjectives as needed.
-    "colors": a list [] of the dominant color palettes of the outfits, using descriptive language
-    "hexcolors": a list [] of the dominant color palettes of the outfits, using a formatted hex string. Make sure the colors are complimentary, and muted colors are recommended. 
+    "name": a name for the style or styles of dress, with descriptive adjectives as needed
+    "colors": a list [] of strings, each one a single color that is common in the outfits, using descriptive but concise language, with regard to color theory
+    "hexcolors": a list [] of hex strings, each one a single color from the outfits. Always mute the hex colors, even if the previous line describes otherwise
     "fit": a brief description the typical fit or silhouette
     "textures": a detailed description of the fabrics, patterns, and textures
     "layering": a description of the layering preferences and thickness
-    "accessories": a list [] of commonly accompanying accessories
+    "accessories": a list [] of fewer than 4 strings, with fewer than 4 words each, describing the most commonly accompanying accessories
 }
 ```
+The comma "," is the preferred punctuation in strings in a <styledesc>
