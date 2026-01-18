@@ -1,0 +1,297 @@
+{
+    "results": [
+        {
+            "id": "gid://shopify/p/vL5ynA5QDzlegJ8PviCeO",
+            "title": "HEAT FLEECE BEANIE",
+            "description": "A comfortable, relaxed-fit fleece beanie with 4-way stretch for everyday wear.",
+            "uniqueSellingPoint": "Features a relaxed opening and 4-way stretch fleece lining for enhanced comfort and flexibility.",
+            "topFeatures": [
+                "4-way stretch fleece lining provides flexibility and comfort for all-day wear",
+                "Relaxed opening design ensures a comfortable, secure fit",
+                "Soft polyester and spandex blend offers warmth and stretch",
+                "Solid black color for versatile styling",
+                "Lightweight construction suitable for layering in various conditions"
+            ],
+            "techSpecs": [
+                "Material: 90% polyester, 10% spandex",
+                "Lining: 10 3/4 inch fleece",
+                "Fit: Relaxed opening, one size",
+                "Color: Black",
+                "Pattern: Solid",
+                "Imported"
+            ],
+            "attributes": [
+                {
+                    "name": "Accessory size",
+                    "values": [
+                        "One size"
+                    ]
+                },
+                {
+                    "name": "Pattern",
+                    "values": [
+                        "Solid"
+                    ]
+                },
+                {
+                    "name": "Color",
+                    "values": [
+                        "Black"
+                    ]
+                },
+                {
+                    "name": "Age group",
+                    "values": [
+                        "Adults"
+                    ]
+                },
+                {
+                    "name": "Fabric",
+                    "values": [
+                        "Fleece",
+                        "Polyester"
+                    ]
+                },
+                {
+                    "name": "Target gender",
+                    "values": [
+                        "Unisex"
+                    ]
+                }
+            ],
+            "media": [
+                {
+                    "url": "https://cdn.shopify.com/s/files/1/1326/1029/files/T4FUHDS1RT_BLACK_HAT.jpg?v=1725556901",
+                    "altText": "32 Degrees Black_Heat Fleece Beanie {bottom}{right}"
+                }
+            ],
+            "priceRange": {
+                "min": {
+                    "amount": 499,
+                    "currency": "USD"
+                },
+                "max": {
+                    "amount": 499,
+                    "currency": "USD"
+                }
+            },
+            "rating": {
+                "rating": 4.599999904632568,
+                "count": 282
+            },
+            "lookupUrl": "https://discover.shopifyapps.com/global/v2/p/vL5ynA5QDzlegJ8PviCeO?_gsid=TsVRxdexbSnP&available_for_sale=1&product_id=6686030233689&query=beanie&ships_to=US&variant_id=42738521768025",
+            "options": [
+                {
+                    "name": "Color",
+                    "values": [
+                        {
+                            "value": "Black"
+                        },
+                        {
+                            "value": "Charcoal Heather"
+                        }
+                    ]
+                },
+                {
+                    "name": "Size",
+                    "values": [
+                        {
+                            "value": "ONE SIZE"
+                        }
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "gid://shopify/ProductVariant/42738521768025?shop=13261029",
+                    "productId": "gid://shopify/Product/6686030233689",
+                    "displayName": "HEAT FLEECE BEANIE",
+                    "availableForSale": true,
+                    "price": {
+                        "amount": 499,
+                        "currency": "USD"
+                    },
+                    "media": [
+                        {
+                            "url": "https://cdn.shopify.com/s/files/1/1326/1029/files/T4FUHDS1RT_BLACK_HAT.jpg?v=1725556901",
+                            "altText": "32 Degrees Black_Heat Fleece Beanie {bottom}{right}"
+                        }
+                    ],
+                    "options": [
+                        {
+                            "name": "Color",
+                            "value": "Black"
+                        },
+                        {
+                            "name": "Size",
+                            "value": "ONE SIZE"
+                        }
+                    ],
+                    "shop": {
+                        "id": "gid://shopify/Shop/13261029",
+                        "name": "32 Degrees",
+                        "onlineStoreUrl": "https://www.32degrees.com"
+                    },
+                    "variantUrl": "https://www.32degrees.com/products/unisex-heat-fleece-beanie?variant=42738521768025&_gsid=TsVRxdexbSnP",
+                    "checkoutUrl": "https://www.32degrees.com/cart/42738521768025:1?_gsid=TsVRxdexbSnP&payment=shop_pay",
+                    "rating": {
+                        "rating": 4.627659797668457,
+                        "count": 282
+                    },
+                    "secondhand": false,
+                    "lookupUrl": "https://discover.shopifyapps.com/global/v2/p/vL5ynA5QDzlegJ8PviCeO?_gsid=TsVRxdexbSnP&available_for_sale=1&product_id=6686030233689&query=beanie&ships_to=US&variant_id=42738521768025"
+                },
+                {
+                    "id": "gid://shopify/ProductVariant/42738521800793?shop=13261029",
+                    "productId": "gid://shopify/Product/6686030233689",
+                    "displayName": "HEAT FLEECE BEANIE",
+                    "availableForSale": true,
+                    "price": {
+                        "amount": 499,
+                        "currency": "USD"
+                    },
+                    "media": [
+                        {
+                            "url": "https://cdn.shopify.com/s/files/1/1326/1029/files/T4FUHDS1RT_CHARCOALHT_HAT.jpg?v=1725556922",
+                            "altText": "32 Degrees Charcoal Heather_Heat Fleece Beanie {bottom}{right}"
+                        }
+                    ],
+                    "options": [
+                        {
+                            "name": "Color",
+                            "value": "Charcoal Heather"
+                        },
+                        {
+                            "name": "Size",
+                            "value": "ONE SIZE"
+                        }
+                    ],
+                    "shop": {
+                        "id": "gid://shopify/Shop/13261029",
+                        "name": "32 Degrees",
+                        "onlineStoreUrl": "https://www.32degrees.com"
+                    },
+                    "variantUrl": "https://www.32degrees.com/products/unisex-heat-fleece-beanie?variant=42738521800793&_gsid=TsVRxdexbSnP",
+                    "checkoutUrl": "https://www.32degrees.com/cart/42738521800793:1?_gsid=TsVRxdexbSnP&payment=shop_pay",
+                    "rating": {
+                        "rating": 4.627659797668457,
+                        "count": 282
+                    },
+                    "secondhand": false,
+                    "lookupUrl": "https://discover.shopifyapps.com/global/v2/p/vL5ynA5QDzlegJ8PviCeO?_gsid=TsVRxdexbSnP&available_for_sale=1&product_id=6686030233689&query=beanie&ships_to=US&variant_id=42738521768025"
+                }
+            ]
+        },
+        {
+            "id": "gid://shopify/p/5mL0zoftm8xAZ6l3t7m7VH",
+            "title": "Sixteen Beanie in Pink",
+            "description": "A stylish pink beanie designed for adults seeking a trendy, comfortable fit.",
+            "uniqueSellingPoint": "Features a solid pink color with a logo pattern for a fashionable look.",
+            "topFeatures": [
+                "Soft knit fabric provides warmth and comfort for daily wear",
+                "One size fits most adults for easy selection and universal fit",
+                "Solid pink color with logo pattern adds a trendy, stylish touch"
+            ],
+            "techSpecs": [
+                "Color: Pink",
+                "Size: One size",
+                "Pattern: Solid with logo",
+                "Target Gender: Unisex",
+                "Age Group: Adults"
+            ],
+            "attributes": [
+                {
+                    "name": "Target gender",
+                    "values": [
+                        "Unisex"
+                    ]
+                },
+                {
+                    "name": "Pattern",
+                    "values": [
+                        "Logo",
+                        "Solid"
+                    ]
+                },
+                {
+                    "name": "Age group",
+                    "values": [
+                        "Adults"
+                    ]
+                },
+                {
+                    "name": "Accessory size",
+                    "values": [
+                        "One size"
+                    ]
+                },
+                {
+                    "name": "Color",
+                    "values": [
+                        "Pink"
+                    ]
+                }
+            ],
+            "media": [
+                {
+                    "url": "https://cdn.shopify.com/s/files/1/0824/2977/2094/files/Facetune_10-11-2025-22-53-35_2c00de23-34f8-40ea-8e86-5b666e890da5.heic?v=1762902511",
+                    "altText": "Sixteen Beanie in Pink"
+                }
+            ],
+            "priceRange": {
+                "min": {
+                    "amount": 2400,
+                    "currency": "USD"
+                },
+                "max": {
+                    "amount": 2400,
+                    "currency": "USD"
+                }
+            },
+            "lookupUrl": "https://discover.shopifyapps.com/global/v2/p/5mL0zoftm8xAZ6l3t7m7VH?_gsid=TsVRxdexbSnP&available_for_sale=1&product_id=11911359955262&query=beanie&ships_to=US&variant_id=51737760891198",
+            "options": [
+                {
+                    "name": "Color",
+                    "values": [
+                        {
+                            "value": "Pink"
+                        }
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "gid://shopify/ProductVariant/51737760891198?shop=82429772094",
+                    "productId": "gid://shopify/Product/11911359955262",
+                    "displayName": "Sixteen Beanie in Pink",
+                    "availableForSale": true,
+                    "price": {
+                        "amount": 2400,
+                        "currency": "USD"
+                    },
+                    "media": [
+                        {
+                            "url": "https://cdn.shopify.com/s/files/1/0824/2977/2094/files/Facetune_10-11-2025-22-53-35_2c00de23-34f8-40ea-8e86-5b666e890da5.heic?v=1762902511",
+                            "altText": "Sixteen Beanie in Pink"
+                        }
+                    ],
+                    "options": [
+                        {
+                            "name": "Color",
+                            "value": "Pink"
+                        }
+                    ],
+                    "shop": {
+                        "id": "gid://shopify/Shop/82429772094",
+                        "name": "Sixteen",
+                        "onlineStoreUrl": "https://sixteensshop.com"
+                    },
+                    "variantUrl": "https://sixteensshop.com/products/sixteen-beanie?variant=51737760891198&_gsid=TsVRxdexbSnP",
+                    "checkoutUrl": "https://sixteensshop.com/cart/51737760891198:1?_gsid=TsVRxdexbSnP&payment=shop_pay",
+                    "secondhand": false,
+                    "lookupUrl": "https://discover.shopifyapps.com/global/v2/p/5mL0zoftm8xAZ6l3t7m7VH?_gsid=TsVRxdexbSnP&available_for_sale=1&product_id=11911359955262&query=beanie&ships_to=US&variant_id=51737760891198"
+                }
+            ]
+        }
+    ]
+}

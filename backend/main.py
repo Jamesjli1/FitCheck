@@ -94,13 +94,14 @@ app.add_middleware(
 class StyleResponse(BaseModel):
     answer: dict[str, Any]
 
-class SearchResponse(BaseModel):
+class SearchTermsResponse(BaseModel):
     answer: List[str]
 
-class SearchRequest(BaseModel):
+class SearchTermsRequest(BaseModel):
     profile: dict[str, Any]
     weather: dict[str, Any]
     looking_for: str | None = None
+
 
 @app.post("/eval-style", response_model=StyleResponse)
 async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
@@ -148,8 +149,9 @@ async def eval_style(images: List[UploadFile] = File(...), prompt: str = None):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
 
-@app.post("/search-terms", response_model=SearchResponse)
-async def search_terms(req: SearchRequest):
+
+@app.post("/search-terms", response_model=SearchTermsResponse)
+async def search_terms(req: SearchTermsRequest):
     try:
         style_profile = req.profile
         weather = req.weather
@@ -167,7 +169,7 @@ async def search_terms(req: SearchRequest):
 
         resp = openrouter_post([{"role": "user", "content": prompt}])
         answer = (resp["choices"][0]["message"]["content"] or "").strip()
-        if not answer:
+        if not answer: 
             raise HTTPException(status_code=502, detail="Model returned empty text")
         
         json_answer = extract_json(answer, '[', ']')
@@ -179,3 +181,51 @@ async def search_terms(req: SearchRequest):
         print("ERROR in /search-terms:", repr(e))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Backend error: {str(e)}")
+
+
+class SearchShopifyRequest(BaseModel):
+    search_term: str
+    context: str = ""
+    limit: int = 10
+
+class SearchShopifyResponse(BaseModel):
+    results: List[dict[str, Any]]
+
+@app.post("/search-shopify", response_model=SearchShopifyResponse)
+def search_shopify(req: SearchShopifyRequest):
+    response = requests.post(
+        url="https://api.shopify.com/auth/access_token",
+        headers={
+            'Content-Type': 'application/json'
+        }, 
+        data=json.dumps({
+            "client_id": os.getenv("SHOPIFY_CLIENT_ID"),
+            "client_secret": os.getenv("SHOPIFY_CLIENT_SECRET"),
+            "grant_type": "client_credentials"
+        }))
+    token = response.json()["access_token"]
+    response = requests.post(
+        'https://discover.shopifyapps.com/global/mcp',
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        },
+        json={
+            'jsonrpc': '2.0',
+            'method': 'tools/call',
+            'id': 1,
+            'params': {
+                'name': 'search_global_products',
+                'arguments': {
+                    'query': req.search_term,
+                    'context': req.context,
+                    'limit': req.limit,
+                    'saved_catalog': os.getenv("SHOPIFY_SAVED_CATALOG")
+                }
+            }
+        }
+    ).json()["result"]["content"][0]["text"]
+
+    json_response = extract_json(response)["offers"]
+
+    return {"results": json_response}
