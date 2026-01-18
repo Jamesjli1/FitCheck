@@ -26,11 +26,5 @@
           "Well-maintained leather boots or clean, minimalist sneakers",
           "Stylish, modern eyewear"
         ]
-    },
-    "weather": {
-        "temperature": -5,
-        "precipitation": "snow",
-        "wind": "moderate"
-    },
-    "looking_for": "accessories"
+    }
 }

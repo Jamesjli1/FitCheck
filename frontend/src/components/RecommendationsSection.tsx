@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Recommendation } from "../types";
+import TopItemCategoryPanel from "./TopItemCategoryPanel";
 
 function roundToHalf(n: number) {
   return Math.round(n * 2) / 2;
@@ -395,7 +396,9 @@ export default function RecommendationsSection({
           </p>
         </div>
       ) : (
-        <div
+        <div>
+          <TopItemCategoryPanel></TopItemCategoryPanel>
+          <div
           style={{
             marginTop: 12,
             display: "grid",
@@ -469,6 +472,8 @@ export default function RecommendationsSection({
             </div>
           ))}
         </div>
+        </div>
+        
       )}
 
       {selected

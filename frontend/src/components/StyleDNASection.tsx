@@ -4,6 +4,7 @@ function chip(label: string) {
   return (
     <span
       key={label}
+      title={label}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -14,7 +15,13 @@ function chip(label: string) {
         fontSize: 13,
         marginRight: 8,
         marginBottom: 8,
-        whiteSpace: "nowrap",
+
+        // ✅ chips behave even if label is huge
+        whiteSpace: "normal", // allow wrap
+        maxWidth: "100%",
+        overflowWrap: "anywhere",
+        wordBreak: "break-word",
+        lineHeight: 1.2,
       }}
     >
       {label}
@@ -62,7 +69,7 @@ function StyleCard({
       ? "linear-gradient(180deg, rgba(97,218,251,0.10), rgba(255,255,255,0.04))"
       : "rgba(255,255,255,0.04)";
 
-  const longTextStyle: React.CSSProperties = {
+  const longText: React.CSSProperties = {
     opacity: 0.88,
     lineHeight: 1.35,
     overflowWrap: "anywhere",
@@ -78,7 +85,7 @@ function StyleCard({
         borderRadius: 16,
         border,
         background: bg,
-        minWidth: 0, // ✅ important in flex/grid parents
+        minWidth: 0,
       }}
     >
       <div
@@ -91,25 +98,24 @@ function StyleCard({
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 700 }}>
-            {title}
-          </div>
+          <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 700 }}>{title}</div>
+
           <div
             style={{
               fontSize: accent === "improved" ? 18 : 16,
               fontWeight: 900,
               marginTop: 4,
               overflowWrap: "anywhere",
+              wordBreak: "break-word",
+              lineHeight: 1.15,
             }}
           >
             {desc.name}
           </div>
-          <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
-            {subtitle}
-          </div>
+
+          <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>{subtitle}</div>
         </div>
 
-        {/* quick color swatches */}
         <div
           style={{
             display: "flex",
@@ -117,6 +123,7 @@ function StyleCard({
             gap: 6,
             flexWrap: "wrap",
             justifyContent: "flex-end",
+            minWidth: 0,
           }}
         >
           {desc.hexcolors?.slice(0, 4).map(swatch)}
@@ -127,66 +134,57 @@ function StyleCard({
         style={{
           marginTop: 12,
           display: "grid",
-          // ✅ minmax prevents the “squeezed column” bug
+          // ✅ this is the real “no overlap ever” fix
           gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr)",
           gap: 12,
           minWidth: 0,
+          alignItems: "start",
         }}
       >
         {/* left column */}
         <div style={{ minWidth: 0 }}>
-          <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>
-            Palette
+          <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>Palette</div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+              minWidth: 0,
+            }}
+          >
+            {(desc.colors ?? []).map(chip)}
           </div>
-          <div style={{ minWidth: 0 }}>{desc.colors.map(chip)}</div>
 
           <div style={{ marginTop: 10 }}>
-            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>
-              Accessories
+            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>Accessories</div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "flex-start",
+                minWidth: 0,
+              }}
+            >
+              {(desc.accessories ?? []).map(chip)}
             </div>
-            <div style={{ minWidth: 0 }}>{desc.accessories.map(chip)}</div>
           </div>
         </div>
 
         {/* right column */}
         <div style={{ minWidth: 0 }}>
           <div style={{ marginBottom: 10 }}>
-            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>
-              Fit
-            </div>
-            <div style={longTextStyle}>{desc.fit}</div>
+            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>Fit</div>
+            <div style={longText}>{desc.fit}</div>
           </div>
 
           <div style={{ marginBottom: 10 }}>
-            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>
-              Textures
-            </div>
-            <div
-              style={{
-                ...longTextStyle,
-                maxHeight: 120,
-                overflow: "auto",
-                paddingRight: 6,
-              }}
-            >
-              {desc.textures}
-            </div>
+            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>Textures</div>
+            <div style={longText}>{desc.textures}</div>
           </div>
 
           <div>
-            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>
-              Layering
-            </div>
-            <div
-              style={{
-                ...longTextStyle,
-                maxHeight: 140,
-                overflow: "auto",
-                paddingRight: 6,
-              }}
-            >
-              {desc.layering}
-            </div>
+            <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 6 }}>Layering</div>
+            <div style={longText}>{desc.layering}</div>
           </div>
         </div>
       </div>
@@ -194,11 +192,7 @@ function StyleCard({
   );
 }
 
-export default function StyleDNASection({
-  identity,
-}: {
-  identity?: IdentityResult | null;
-}) {
+export default function StyleDNASection({ identity }: { identity?: IdentityResult | null }) {
   return (
     <section
       className="vault-panel fade-up"
@@ -207,7 +201,7 @@ export default function StyleDNASection({
         padding: 16,
         borderRadius: 16,
         minHeight: 260,
-        minWidth: 0, // ✅ important if parent is grid/flex
+        minWidth: 0,
       }}
     >
       <div
@@ -220,10 +214,14 @@ export default function StyleDNASection({
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Fashion Identity</h2>
           <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
-            Combined identity across all uploaded fits.
+            Your fashion identity is: 
           </div>
+          <h1 style={{ margin: 0, fontSize: 24 }}>
+
+            {identity ? identity?.emoji + "  The " + identity?.personality  : "To be determined ..."}
+          </h1>
+          
         </div>
 
         {identity ? (
@@ -248,40 +246,28 @@ export default function StyleDNASection({
           Upload fits, then click <b>Mint Style Identity</b>.
         </p>
       ) : (
-        <div
-          style={{
-            marginTop: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            minWidth: 0,
-          }}
-        >
-          {/* Summary */}
-          <div
-            className="vault-card"
-            style={{
-              padding: 14,
-              borderRadius: 16,
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>
-              Summary
-            </div>
+        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+          <div className="vault-card" style={{ padding: 14, borderRadius: 16, minWidth: 0 }}>
+            <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 800 }}>Summary</div>
             <div
               style={{
                 marginTop: 8,
                 opacity: 0.9,
                 lineHeight: 1.35,
                 overflowWrap: "anywhere",
+                wordBreak: "break-word",
+                whiteSpace: "pre-wrap",
+                textAlign: "left",
               }}
             >
-              {identity.current_summary}
+              {identity.current_summary.map((point: string, i: number) => (
+                <div key={i} style={{ marginBottom: i < identity.current_summary.length - 1 ? 6 : 0 }}>
+                  • {point}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Current vs Improved */}
           <StyleCard
             title="CURRENT IDENTITY"
             subtitle="What your outfits currently signal most often."
