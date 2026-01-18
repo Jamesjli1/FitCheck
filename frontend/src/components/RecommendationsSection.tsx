@@ -472,7 +472,7 @@ export default function RecommendationsSection({
 
                   {/* ✅ stars removed */}
 
-                  {p.reasons?.length ? (
+                  {/*p.reasons?.length ? (
                     <div style={{ fontSize: 12, opacity: 0.78, display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {p.reasons.slice(0, 2).map((r) => (
                         <span
@@ -488,7 +488,7 @@ export default function RecommendationsSection({
                         </span>
                       ))}
                     </div>
-                  ) : null}
+                  ) : null*/}
                 </div>
               </div>
             ))}
