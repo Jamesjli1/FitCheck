@@ -369,22 +369,24 @@ export default function RecommendationsSection({
   const currItems = useMemo(() => {
   if (!recommendations) return [];
 
-  let sorted = [...recommendations.slice(0, 10)];
+  let sorted = [...recommendations].slice(0, 10); // ✅ copy so sort doesn't mutate original
 
   switch (filter) {
     case "price-asc":
-      sorted.sort((a, b) => parsePrice(a.price || "0") - parsePrice(b.price || "0"));
+      sorted.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
       break;
     case "price-desc":
-      sorted.sort((a, b) => parsePrice(b.price || "0") - parsePrice(a.price || "0"));
+      sorted.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
       break;
     case "rating-desc":
-      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      sorted.sort((a, b) => ((b as any).rating || 0) - ((a as any).rating || 0));
+      break;
+    default:
       break;
   }
 
   return sorted;
-}, [filter, recommendations]); // ✅ stable
+}, [filter, recommendations]);
 
 
 
@@ -443,7 +445,8 @@ export default function RecommendationsSection({
           }}
         >
           {currItems.map((p) => (
-            <div
+            <div key={p.id ?? p.productUrl ?? `${p.title}-${p.imageUrl}`}
+
               key={p.title}
               role="button"
               tabIndex={0}
