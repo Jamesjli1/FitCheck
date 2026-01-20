@@ -93,10 +93,10 @@ In .env:
 GEMINI_API_KEY=your_gemini_key
 OPENROUTER_API_KEY=your_openrouter_key
 
-# Shopify (UCP / Admin)
-SHOPIFY_SHOP_DOMAIN=your-store.myshopify.com
-SHOPIFY_ACCESS_TOKEN=your_token
-SHOPIFY_API_VERSION=2024-01
+# Shopify (Developer Dashboard / Catalogs / Create a catalog)
+SHOPIFY_CLIENT_ID=""
+SHOPIFY_CLIENT_SECRET=""
+SHOPIFY_SAVED_CATALOG=""
 
 Run Backend:
 uvicorn main:app --reload --port 8000
